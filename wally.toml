@@ -1,0 +1,25 @@
+[package]
+name = "lucas/roblox-game-template"
+version = "0.1.0"
+registry = "https://github.com/UpliftGames/wally-index"
+realm = "shared"
+
+[dependencies]
+Signal = "sleitnick/signal@2.0.3"
+Replica = "aykut92/replica@0.1.7"
+TableUtil = "sleitnick/table-util@1.2.1"
+Janitor = "howmanysmall/janitor@^1.17.0"
+Loader = "sleitnick/loader@2.0.0"
+Cmdr = "evaera/cmdr@1.12.0"
+Promise = "evaera/promise@4.0.0"
+Component = "sleitnick/component@2.4.8"
+Charm = "littensy/charm@0.10.0"
+CameraShaker = "brittonfischer/camerashaker@0.1.0"
+ShapecastHitbox = "teamswordphin/shapecasthitbox@0.2.9"
+RagdollSystem = "leostormer/ragdoll-system@0.6.1"
+ZonePlus = "mattschrubb/zoneplus@3.2.0"
+EzVisualz = "arxkdev/ezvisualz@0.0.6"
+TopbarPlus = "1foreverhd/topbarplus@3.4.0"
+
+[server-dependencies]
+ProfileStore = "aykut92/profilestore@1.0.21"
