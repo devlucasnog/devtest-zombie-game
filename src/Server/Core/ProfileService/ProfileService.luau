@@ -8,6 +8,7 @@ local Janitor = require(ReplicatedStorage.Packages.Janitor)
 local ProfileStore = require(ServerScriptService.Packages.ProfileStore)
 local Signals = require(ServerScriptService.Server.Signals)
 local Replica = require(ReplicatedStorage.Packages.Replica)
+local Types = require(ReplicatedStorage.Shared.Types)
 
 local TOKEN = Replica.Token("Profile")
 local DATASTORE_SUFFIX = RunService:IsStudio() and "Dev" or "Prod"
@@ -94,6 +95,11 @@ function Private.OnPlayerRemoving(player: Player)
 	end
 
 	data.Session:EndSession()
+end
+
+function Shared.GetProfile(player: Player): Types.ProfileType?
+	local data = playerData[player]
+	return data and data.Replica.Data
 end
 
 return Shared
