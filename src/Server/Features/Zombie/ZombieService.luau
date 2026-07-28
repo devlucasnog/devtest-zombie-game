@@ -1,5 +1,6 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
+local ServerStorage = game:GetService("ServerStorage")
 local Workspace = game:GetService("Workspace")
 
 local Janitor = require(ReplicatedStorage.Packages.Janitor)
@@ -10,7 +11,7 @@ local ZombieComponent = require(script.Parent.Components.ZombieComponent)
 local DEFAULT_ZOMBIE_TYPE = "Basic"
 
 local MatchConfig = Config.MatchConfig
-local ZombieConfig = Config.ZombieConfig
+local ZombiesFolder = ServerStorage.Zombies
 local ZombieSpawns = workspace.ZombieSpawn:GetChildren()
 
 local zombiesFolder: Folder
@@ -27,13 +28,13 @@ function Shared.OnStart()
 	Signals.CombatSignals.WeaponHit:Connect(Private.OnWeaponHit)
 end
 
-function Private.OnWeaponHit(hitCharacter: Model, damage: number, attacker: Player)
+function Private.OnWeaponHit(hitCharacter: Model, damage: number, attacker: Player, hitPart: BasePart)
 	local zombie = ZombieComponent:FromInstance(hitCharacter)
 	if not zombie then
 		return
 	end
 
-	zombie:TakeDamage(damage, attacker)
+	zombie:TakeDamage(damage, attacker, hitPart)
 end
 
 function Private.CreateFolder()
@@ -75,9 +76,8 @@ function Private.SpawnZombie()
 	end
 
 	local spawnPoint = ZombieSpawns[math.random(#ZombieSpawns)]
-	local zombieConfig = ZombieConfig[DEFAULT_ZOMBIE_TYPE]
 
-	local zombie = zombieConfig.ModelReference:Clone()
+	local zombie = ZombiesFolder[DEFAULT_ZOMBIE_TYPE]:Clone()
 	zombie:PivotTo(spawnPoint.CFrame + Vector3.new(0, 4, 0))
 	zombie.Parent = zombiesFolder
 end

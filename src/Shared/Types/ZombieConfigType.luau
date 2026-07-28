@@ -5,7 +5,6 @@ export type ZombieConfigType = {
 	Damage: number,
 	AttackCooldown: number,
 	AttackRange: number,
-	ModelReference: Model,
 }
 
 return {}

@@ -8,6 +8,7 @@ local Config = require(ReplicatedStorage.Shared.Config)
 local Enums = require(ReplicatedStorage.Shared.Enums)
 local Types = require(ReplicatedStorage.Shared.Types)
 local MatchService = require(ServerScriptService.Server.Core.Match.MatchService)
+local Network = require(ServerScriptService.Server.Network)
 
 local TAG = "Zombie"
 local TARGET_REFRESH_INTERVAL = 0.25
@@ -61,13 +62,15 @@ function ZombieComponent:Start()
 	)
 end
 
-function ZombieComponent:TakeDamage(damage: number, attacker: Player)
+function ZombieComponent:TakeDamage(damage: number, attacker: Player, hitPart: BasePart)
 	if self._humanoid.Health <= 0 then
 		return
 	end
 
 	self._lastAttacker = attacker
 	self._humanoid:TakeDamage(damage)
+
+	Network.ZombieDamaged.FireAll({ Part = hitPart, Damage = damage })
 end
 
 function ZombieComponent:HeartbeatUpdate(dt: number)

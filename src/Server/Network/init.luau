@@ -204,6 +204,14 @@ function SerdesFunctions.WriteEVENT_WeaponFired(Value: { Muzzle: Attachment?, En
 	buffer.writef32(SendBuffer, BLOCK_START + 9, Vector.Z)
 end
 
+function SerdesFunctions.WriteEVENT_ZombieDamaged(Value: { Part: BasePart?, Damage: number }): ()
+	-- Allocate BLOCK: 3 bytes
+	local BLOCK_START = Allocate(3)
+	buffer.writeu8(SendBuffer, BLOCK_START + 0, 1)
+	table.insert(SendInstances, Value.Part or Null)
+	buffer.writeu16(SendBuffer, BLOCK_START + 1, Value.Damage)
+end
+
 if not RunService:IsRunning() then
 	local NOOP = function() end
 	local Returns = table.freeze({
@@ -223,6 +231,12 @@ if not RunService:IsRunning() then
 		FireExcept = NOOP
 	},
 	WeaponFired = {
+		Fire = NOOP,
+		FireAll = NOOP,
+		FireList = NOOP,
+		FireExcept = NOOP
+	},
+	ZombieDamaged = {
 		Fire = NOOP,
 		FireAll = NOOP,
 		FireList = NOOP,
@@ -459,6 +473,43 @@ local Returns = table.freeze({
 		FireExcept = function(Except: Player, Value: { Muzzle: Attachment?, EndPoint: Vector3 }): ()
 			Load()
 			SerdesFunctions.WriteEVENT_WeaponFired(Value)
+			local Buffer = buffer.create(SendCursor)
+			buffer.copy(Buffer, 0, SendBuffer, 0, SendCursor)
+			for _, Player in Players:GetPlayers() do
+				if Player == Except then
+					continue
+				end
+				Unreliable:FireClient(Player, Buffer, SendInstances)
+			end
+		end,
+	},
+	ZombieDamaged = {
+		Fire = function(Player: Player, Value: { Part: BasePart?, Damage: number }): ()
+			Load()
+			SerdesFunctions.WriteEVENT_ZombieDamaged(Value)
+			local Buffer = buffer.create(SendCursor)
+			buffer.copy(Buffer, 0, SendBuffer, 0, SendCursor)
+			Unreliable:FireClient(Player, Buffer, SendInstances)
+		end,
+		FireAll = function(Value: { Part: BasePart?, Damage: number }): ()
+			Load()
+			SerdesFunctions.WriteEVENT_ZombieDamaged(Value)
+			local Buffer = buffer.create(SendCursor)
+			buffer.copy(Buffer, 0, SendBuffer, 0, SendCursor)
+			Unreliable:FireAllClients(Buffer, SendInstances)
+		end,
+		FireList = function(List: {Player}, Value: { Part: BasePart?, Damage: number }): ()
+			Load()
+			SerdesFunctions.WriteEVENT_ZombieDamaged(Value)
+			local Buffer = buffer.create(SendCursor)
+			buffer.copy(Buffer, 0, SendBuffer, 0, SendCursor)
+			for _, Player in List do
+				Unreliable:FireClient(Player, Buffer, SendInstances)
+			end
+		end,
+		FireExcept = function(Except: Player, Value: { Part: BasePart?, Damage: number }): ()
+			Load()
+			SerdesFunctions.WriteEVENT_ZombieDamaged(Value)
 			local Buffer = buffer.create(SendCursor)
 			buffer.copy(Buffer, 0, SendBuffer, 0, SendCursor)
 			for _, Player in Players:GetPlayers() do

@@ -25,7 +25,7 @@ export type ZombieComponentType = {
 	Start: (self: ZombieComponentType) -> (),
 	Stop: (self: ZombieComponentType) -> (),
 	HeartbeatUpdate: (self: ZombieComponentType, dt: number) -> (),
-	TakeDamage: (self: ZombieComponentType, damage: number, attacker: Player) -> (),
+	TakeDamage: (self: ZombieComponentType, damage: number, attacker: Player, hitPart: BasePart) -> (),
 
 	_OnDied: (self: ZombieComponentType) -> (),
 

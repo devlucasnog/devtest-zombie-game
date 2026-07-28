@@ -40,3 +40,13 @@ event WeaponFired {
 		EndPoint: vector,
 	}
 }
+
+event ZombieDamaged {
+	From: Server,
+	Type: Unreliable,
+	Call: SingleSync,
+	Data: struct {
+		Part: Instance(BasePart)?,
+		Damage: u16,
+	}
+}

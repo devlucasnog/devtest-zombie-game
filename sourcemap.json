@@ -2517,6 +2517,19 @@
                           ]
                         }
                       ]
+                    },
+                    {
+                      "name": "Zombie",
+                      "className": "Folder",
+                      "children": [
+                        {
+                          "name": "ZombieVisualsController",
+                          "className": "ModuleScript",
+                          "filePaths": [
+                            "src/Client\\Features\\Zombie\\ZombieVisualsController.luau"
+                          ]
+                        }
+                      ]
                     }
                   ]
                 },

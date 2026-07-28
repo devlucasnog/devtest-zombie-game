@@ -163,6 +163,7 @@ local SerdesThread: thread?
 Queue.Reliable[1] = table.create(256)
 Queue.Reliable[2] = table.create(256)
 Queue.Unreliable[0] = table.create(256)
+Queue.Unreliable[1] = table.create(256)
 function SerdesFunctions.WriteEVENT_FireWeapon(Value: { Direction: Vector3 }): ()
 	-- Allocate BLOCK: 13 bytes
 	local BLOCK_START = Allocate(13)
@@ -212,6 +213,22 @@ function SerdesFunctions.ReadEVENT_WeaponFired(): ({ Muzzle: Attachment?, EndPoi
 	return Value
 end
 
+function SerdesFunctions.ReadEVENT_ZombieDamaged(): ({ Part: BasePart?, Damage: number })
+	-- Read BLOCK: 2 bytes
+	local BLOCK_START = Read(2)
+	local Value = {} :: any
+	RecieveInstanceCursor += 1
+	if typeof(RecieveInstances[RecieveInstanceCursor]) == "Instance" then
+		RecieveInstanceCursor -= 1
+		RecieveInstanceCursor += 1
+		Value.Part = RecieveInstances[RecieveInstanceCursor]
+		if typeof(Value.Part) ~= "Instance" then error(`Expected an Instance, got {typeof(Value.Part)} instead.`) end
+		if not Value.Part:IsA("BasePart") then error(`Expected an Instance of type "BasePart", got "{Value.Part.ClassName}" instead.`) end
+	end
+	Value.Damage = buffer.readu16(RecieveBuffer, BLOCK_START + 0)
+	return Value
+end
+
 if not RunService:IsRunning() then
 	local NOOP = function() end
 	local Returns = table.freeze({
@@ -225,6 +242,9 @@ if not RunService:IsRunning() then
 		On = NOOP
 	},
 	WeaponFired = {
+		On = NOOP
+	},
+	ZombieDamaged = {
 		On = NOOP
 	},
 	})
@@ -315,6 +335,12 @@ Unreliable.OnClientEvent:Connect(function(Buffer: buffer, Instances: {Instance})
 				SerdesEvent = "WeaponFired"
 				Events.Unreliable[0](Value)
 			end
+		elseif Index == 1 then
+			local Value: { Part: BasePart?, Damage: number } = SerdesFunctions.ReadEVENT_ZombieDamaged()
+			if Events.Unreliable[1] ~= nil then
+				SerdesEvent = "ZombieDamaged"
+				Events.Unreliable[1](Value)
+			end
 		end
 	end
 end)
@@ -362,6 +388,16 @@ local Returns = table.freeze({
 			return function (): ()
 				if Events.Unreliable[0] == Listener then
 					Events.Unreliable[0] = nil
+				end
+			end
+		end
+	},
+	ZombieDamaged = {
+		On = function(Listener: (Value: { Part: BasePart?, Damage: number }) -> ()): () -> ()
+			Events.Unreliable[1] = Listener
+			return function (): ()
+				if Events.Unreliable[1] == Listener then
+					Events.Unreliable[1] = nil
 				end
 			end
 		end
