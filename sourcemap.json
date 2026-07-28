@@ -1540,6 +1540,13 @@
                           ]
                         },
                         {
+                          "name": "Remotes",
+                          "className": "Folder",
+                          "filePaths": [
+                            "Packages\\_Index\\leostormer_ragdoll-system@0.6.3\\ragdoll-system\\lib\\Remotes.model.json"
+                          ]
+                        },
+                        {
                           "name": "TableUtils",
                           "className": "ModuleScript",
                           "filePaths": [
@@ -2076,6 +2083,13 @@
                   ]
                 },
                 {
+                  "name": "ZombieConfig",
+                  "className": "ModuleScript",
+                  "filePaths": [
+                    "src/Shared\\Config\\ZombieConfig.luau"
+                  ]
+                },
+                {
                   "name": "WeaponConfig",
                   "className": "ModuleScript",
                   "filePaths": [
@@ -2119,17 +2133,17 @@
                       ]
                     },
                     {
-                      "name": "MatchAtom",
-                      "className": "ModuleScript",
-                      "filePaths": [
-                        "src/Shared\\Store\\Atoms\\MatchAtom.luau"
-                      ]
-                    },
-                    {
                       "name": "ProfileAtom",
                       "className": "ModuleScript",
                       "filePaths": [
                         "src/Shared\\Store\\Atoms\\ProfileAtom.luau"
+                      ]
+                    },
+                    {
+                      "name": "MatchAtom",
+                      "className": "ModuleScript",
+                      "filePaths": [
+                        "src/Shared\\Store\\Atoms\\MatchAtom.luau"
                       ]
                     }
                   ]
@@ -2151,13 +2165,6 @@
                   ]
                 },
                 {
-                  "name": "JanitorType",
-                  "className": "ModuleScript",
-                  "filePaths": [
-                    "src/Shared\\Types\\JanitorType.luau"
-                  ]
-                },
-                {
                   "name": "LeaderboardEntryType",
                   "className": "ModuleScript",
                   "filePaths": [
@@ -2165,17 +2172,38 @@
                   ]
                 },
                 {
-                  "name": "ProfileActionType",
-                  "className": "ModuleScript",
-                  "filePaths": [
-                    "src/Shared\\Types\\ProfileActionType.luau"
-                  ]
-                },
-                {
                   "name": "ProfileType",
                   "className": "ModuleScript",
                   "filePaths": [
                     "src/Shared\\Types\\ProfileType.luau"
+                  ]
+                },
+                {
+                  "name": "ZombieConfigType",
+                  "className": "ModuleScript",
+                  "filePaths": [
+                    "src/Shared\\Types\\ZombieConfigType.luau"
+                  ]
+                },
+                {
+                  "name": "ZombieComponentType",
+                  "className": "ModuleScript",
+                  "filePaths": [
+                    "src/Shared\\Types\\ZombieComponentType.luau"
+                  ]
+                },
+                {
+                  "name": "JanitorType",
+                  "className": "ModuleScript",
+                  "filePaths": [
+                    "src/Shared\\Types\\JanitorType.luau"
+                  ]
+                },
+                {
+                  "name": "ProfileActionType",
+                  "className": "ModuleScript",
+                  "filePaths": [
+                    "src/Shared\\Types\\ProfileActionType.luau"
                   ]
                 },
                 {
@@ -2195,17 +2223,17 @@
               ],
               "children": [
                 {
-                  "name": "NumberUtils",
-                  "className": "ModuleScript",
-                  "filePaths": [
-                    "src/Shared\\Utils\\NumberUtils.luau"
-                  ]
-                },
-                {
                   "name": "WeaponUtils",
                   "className": "ModuleScript",
                   "filePaths": [
                     "src/Shared\\Utils\\WeaponUtils.luau"
+                  ]
+                },
+                {
+                  "name": "NumberUtils",
+                  "className": "ModuleScript",
+                  "filePaths": [
+                    "src/Shared\\Utils\\NumberUtils.luau"
                   ]
                 }
               ]
@@ -2267,19 +2295,6 @@
               "className": "Folder",
               "children": [
                 {
-                  "name": "Match",
-                  "className": "Folder",
-                  "children": [
-                    {
-                      "name": "MatchService",
-                      "className": "ModuleScript",
-                      "filePaths": [
-                        "src/Server\\Core\\Match\\MatchService.luau"
-                      ]
-                    }
-                  ]
-                },
-                {
                   "name": "Profile",
                   "className": "Folder",
                   "children": [
@@ -2295,6 +2310,19 @@
                       "className": "ModuleScript",
                       "filePaths": [
                         "src/Server\\Core\\Profile\\ProfileTemplate.luau"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "Match",
+                  "className": "Folder",
+                  "children": [
+                    {
+                      "name": "MatchService",
+                      "className": "ModuleScript",
+                      "filePaths": [
+                        "src/Server\\Core\\Match\\MatchService.luau"
                       ]
                     }
                   ]
@@ -2314,6 +2342,32 @@
                       "className": "ModuleScript",
                       "filePaths": [
                         "src/Server\\Features\\Weapon\\WeaponService.luau"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "Zombie",
+                  "className": "Folder",
+                  "children": [
+                    {
+                      "name": "Components",
+                      "className": "Folder",
+                      "children": [
+                        {
+                          "name": "ZombieComponent",
+                          "className": "ModuleScript",
+                          "filePaths": [
+                            "src/Server\\Features\\Zombie\\Components\\ZombieComponent.luau"
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "ZombieService",
+                      "className": "ModuleScript",
+                      "filePaths": [
+                        "src/Server\\Features\\Zombie\\ZombieService.luau"
                       ]
                     }
                   ]
@@ -2404,19 +2458,6 @@
                       ]
                     },
                     {
-                      "name": "Match",
-                      "className": "Folder",
-                      "children": [
-                        {
-                          "name": "MatchController",
-                          "className": "ModuleScript",
-                          "filePaths": [
-                            "src/Client\\Features\\Match\\MatchController.luau"
-                          ]
-                        }
-                      ]
-                    },
-                    {
                       "name": "Weapon",
                       "className": "Folder",
                       "children": [
@@ -2432,6 +2473,19 @@
                           "className": "ModuleScript",
                           "filePaths": [
                             "src/Client\\Features\\Weapon\\WeaponController.luau"
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "Match",
+                      "className": "Folder",
+                      "children": [
+                        {
+                          "name": "MatchController",
+                          "className": "ModuleScript",
+                          "filePaths": [
+                            "src/Client\\Features\\Match\\MatchController.luau"
                           ]
                         }
                       ]

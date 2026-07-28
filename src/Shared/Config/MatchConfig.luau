@@ -6,4 +6,5 @@ return {
 	IntermissionDuration = 5,
 	PointsPerKill = 10,
 	GameEndDisplayDuration = 5,
+	ZombieSpawnInterval = 2,
 }
