@@ -20,6 +20,7 @@ local WeaponUtils = Utils.WeaponUtils
 
 local playerJanitors: { [Player]: Types.JanitorType } = {}
 local playerAmmo: { [Player]: number } = {}
+local playerLastFireTime: { [Player]: number } = {}
 
 local Private = {}
 local Shared = {}
@@ -62,6 +63,7 @@ end
 
 function Private.OnPlayerRemoving(player: Player)
 	playerAmmo[player] = nil
+	playerLastFireTime[player] = nil
 
 	local janitor = playerJanitors[player]
 	if not janitor then
@@ -88,7 +90,7 @@ function Private.OnFireWeaponRequest(player: Player, payload: { Direction: Vecto
 		return
 	end
 
-	if payload.Direction.Magnitude == 0 then
+	if not payload.Direction or not (payload.Direction.Magnitude > 0) then
 		return
 	end
 
@@ -103,11 +105,21 @@ function Private.OnFireWeaponRequest(player: Player, payload: { Direction: Vecto
 		return
 	end
 
+	if weapon.Name ~= weaponEquipped then
+		return
+	end
+
 	local ammo = playerAmmo[player]
 	if not ammo or ammo <= 0 then
 		return
 	end
 
+	local lastFireTime = playerLastFireTime[player]
+	if lastFireTime and os.clock() - lastFireTime < weaponConfig.FireRate then
+		return
+	end
+
+	playerLastFireTime[player] = os.clock()
 	playerAmmo[player] = ammo - 1
 	Network.AmmoUpdated.Fire(player, { Current = ammo - 1, Max = weaponConfig.MaxAmmo })
 
@@ -126,7 +138,16 @@ function Private.OnFireWeaponRequest(player: Player, payload: { Direction: Vecto
 	end
 
 	local hitCharacter = result.Instance:FindFirstAncestorOfClass("Model")
-	if hitCharacter and Players:GetPlayerFromCharacter(hitCharacter) then
+	if not hitCharacter then
+		return
+	end
+
+	if Players:GetPlayerFromCharacter(hitCharacter) then
+		return
+	end
+
+	local humanoid = hitCharacter:FindFirstChildOfClass("Humanoid")
+	if not humanoid or humanoid.Health <= 0 then
 		return
 	end
 
