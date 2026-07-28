@@ -1540,6 +1540,13 @@
                           ]
                         },
                         {
+                          "name": "Remotes",
+                          "className": "Folder",
+                          "filePaths": [
+                            "Packages\\_Index\\leostormer_ragdoll-system@0.6.3\\ragdoll-system\\lib\\Remotes.model.json"
+                          ]
+                        },
+                        {
                           "name": "TableUtils",
                           "className": "ModuleScript",
                           "filePaths": [
@@ -2235,6 +2242,13 @@
                   "filePaths": [
                     "src/Shared\\Utils\\WeaponUtils.luau"
                   ]
+                },
+                {
+                  "name": "VFXUtils",
+                  "className": "ModuleScript",
+                  "filePaths": [
+                    "src/Shared\\Utils\\VFXUtils.luau"
+                  ]
                 }
               ]
             }
@@ -2389,13 +2403,6 @@
               ],
               "children": [
                 {
-                  "name": "CombatSignals",
-                  "className": "ModuleScript",
-                  "filePaths": [
-                    "src/Server\\Signals\\CombatSignals.luau"
-                  ]
-                },
-                {
                   "name": "MatchSignals",
                   "className": "ModuleScript",
                   "filePaths": [
@@ -2407,6 +2414,13 @@
                   "className": "ModuleScript",
                   "filePaths": [
                     "src/Server\\Signals\\ProfileSignals.luau"
+                  ]
+                },
+                {
+                  "name": "CombatSignals",
+                  "className": "ModuleScript",
+                  "filePaths": [
+                    "src/Server\\Signals\\CombatSignals.luau"
                   ]
                 }
               ]
@@ -2493,6 +2507,13 @@
                           "className": "ModuleScript",
                           "filePaths": [
                             "src/Client\\Features\\Weapon\\WeaponController.luau"
+                          ]
+                        },
+                        {
+                          "name": "WeaponVisualsController",
+                          "className": "ModuleScript",
+                          "filePaths": [
+                            "src/Client\\Features\\Weapon\\WeaponVisualsController.luau"
                           ]
                         }
                       ]

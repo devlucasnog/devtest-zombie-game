@@ -7,7 +7,11 @@ local Charm = require(ReplicatedStorage.Packages.Charm)
 local Janitor = require(ReplicatedStorage.Packages.Janitor)
 local SmoothShiftLock = require(ReplicatedStorage.Packages.SmoothShiftLock)
 local Store = require(ReplicatedStorage.Shared.Store)
+local Utils = require(ReplicatedStorage.Shared.Utils)
 local Network = require(script.Parent.Parent.Parent.Network)
+
+local WeaponUtils = Utils.WeaponUtils
+local VFXUtils = Utils.VFXUtils
 
 local WEAPON_TAG = "Weapon"
 local SHIFT_LOCK_TOGGLE_ACTION = "ShiftLockSwitchAction"
@@ -81,6 +85,7 @@ function Private.OnFireAction(_actionName: string, inputState: Enum.UserInputSta
 	end
 
 	Network.FireWeapon.Fire({ Direction = camera.CFrame.LookVector })
+	VFXUtils.PlayMuzzleFlash(WeaponUtils.GetMuzzle(equippedWeapon))
 
 	return Enum.ContextActionResult.Sink
 end

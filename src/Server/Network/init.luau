@@ -193,6 +193,13 @@ function SerdesFunctions.WriteEVENT_MatchUpdated(Value: { State: string, Round: 
 	buffer.writeu16(SendBuffer, BLOCK_START + 4, Value.Duration)
 end
 
+function SerdesFunctions.WriteEVENT_WeaponFired(Value: { Muzzle: Attachment? }): ()
+	-- Allocate BLOCK: 1 bytes
+	local BLOCK_START = Allocate(1)
+	buffer.writeu8(SendBuffer, BLOCK_START + 0, 0)
+	table.insert(SendInstances, Value.Muzzle or Null)
+end
+
 if not RunService:IsRunning() then
 	local NOOP = function() end
 	local Returns = table.freeze({
@@ -206,6 +213,12 @@ if not RunService:IsRunning() then
 		FireExcept = NOOP
 	},
 	MatchUpdated = {
+		Fire = NOOP,
+		FireAll = NOOP,
+		FireList = NOOP,
+		FireExcept = NOOP
+	},
+	WeaponFired = {
 		Fire = NOOP,
 		FireAll = NOOP,
 		FireList = NOOP,
@@ -412,6 +425,43 @@ local Returns = table.freeze({
 				buffer.copy(SendBuffer, Position, Buffer, 0, Size)
 				table.move(Instances, 1, #Instances, #SendInstances + 1, SendInstances)
 				PlayersMap[Player] = Save()
+			end
+		end,
+	},
+	WeaponFired = {
+		Fire = function(Player: Player, Value: { Muzzle: Attachment? }): ()
+			Load()
+			SerdesFunctions.WriteEVENT_WeaponFired(Value)
+			local Buffer = buffer.create(SendCursor)
+			buffer.copy(Buffer, 0, SendBuffer, 0, SendCursor)
+			Unreliable:FireClient(Player, Buffer, SendInstances)
+		end,
+		FireAll = function(Value: { Muzzle: Attachment? }): ()
+			Load()
+			SerdesFunctions.WriteEVENT_WeaponFired(Value)
+			local Buffer = buffer.create(SendCursor)
+			buffer.copy(Buffer, 0, SendBuffer, 0, SendCursor)
+			Unreliable:FireAllClients(Buffer, SendInstances)
+		end,
+		FireList = function(List: {Player}, Value: { Muzzle: Attachment? }): ()
+			Load()
+			SerdesFunctions.WriteEVENT_WeaponFired(Value)
+			local Buffer = buffer.create(SendCursor)
+			buffer.copy(Buffer, 0, SendBuffer, 0, SendCursor)
+			for _, Player in List do
+				Unreliable:FireClient(Player, Buffer, SendInstances)
+			end
+		end,
+		FireExcept = function(Except: Player, Value: { Muzzle: Attachment? }): ()
+			Load()
+			SerdesFunctions.WriteEVENT_WeaponFired(Value)
+			local Buffer = buffer.create(SendCursor)
+			buffer.copy(Buffer, 0, SendBuffer, 0, SendCursor)
+			for _, Player in Players:GetPlayers() do
+				if Player == Except then
+					continue
+				end
+				Unreliable:FireClient(Player, Buffer, SendInstances)
 			end
 		end,
 	},

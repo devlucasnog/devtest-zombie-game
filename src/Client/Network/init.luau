@@ -162,6 +162,7 @@ local SerdesEvent = "?"
 local SerdesThread: thread?
 Queue.Reliable[1] = table.create(256)
 Queue.Reliable[2] = table.create(256)
+Queue.Unreliable[0] = table.create(256)
 function SerdesFunctions.WriteEVENT_FireWeapon(Value: { Direction: Vector3 }): ()
 	-- Allocate BLOCK: 13 bytes
 	local BLOCK_START = Allocate(13)
@@ -192,6 +193,19 @@ function SerdesFunctions.ReadEVENT_MatchUpdated(): ({ State: string, Round: numb
 	return Value
 end
 
+function SerdesFunctions.ReadEVENT_WeaponFired(): ({ Muzzle: Attachment? })
+	local Value = {} :: any
+	RecieveInstanceCursor += 1
+	if typeof(RecieveInstances[RecieveInstanceCursor]) == "Instance" then
+		RecieveInstanceCursor -= 1
+		RecieveInstanceCursor += 1
+		Value.Muzzle = RecieveInstances[RecieveInstanceCursor]
+		if typeof(Value.Muzzle) ~= "Instance" then error(`Expected an Instance, got {typeof(Value.Muzzle)} instead.`) end
+		if not Value.Muzzle:IsA("Attachment") then error(`Expected an Instance of type "Attachment", got "{Value.Muzzle.ClassName}" instead.`) end
+	end
+	return Value
+end
+
 if not RunService:IsRunning() then
 	local NOOP = function() end
 	local Returns = table.freeze({
@@ -202,6 +216,9 @@ if not RunService:IsRunning() then
 		On = NOOP
 	},
 	MatchUpdated = {
+		On = NOOP
+	},
+	WeaponFired = {
 		On = NOOP
 	},
 	})
@@ -286,6 +303,13 @@ Unreliable.OnClientEvent:Connect(function(Buffer: buffer, Instances: {Instance})
 		-- Read BLOCK: 1 bytes
 		local BLOCK_START = Read(1)
 		local Index = buffer.readu8(RecieveBuffer, BLOCK_START + 0)
+		if Index == 0 then
+			local Value: { Muzzle: Attachment? } = SerdesFunctions.ReadEVENT_WeaponFired()
+			if Events.Unreliable[0] ~= nil then
+				SerdesEvent = "WeaponFired"
+				Events.Unreliable[0](Value)
+			end
+		end
 	end
 end)
 
@@ -322,6 +346,16 @@ local Returns = table.freeze({
 			return function (): ()
 				if Events.Reliable[2] == Listener then
 					Events.Reliable[2] = nil
+				end
+			end
+		end
+	},
+	WeaponFired = {
+		On = function(Listener: (Value: { Muzzle: Attachment? }) -> ()): () -> ()
+			Events.Unreliable[0] = Listener
+			return function (): ()
+				if Events.Unreliable[0] == Listener then
+					Events.Unreliable[0] = nil
 				end
 			end
 		end

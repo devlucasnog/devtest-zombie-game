@@ -30,3 +30,12 @@ event MatchUpdated {
 		Duration: u16,
 	}
 }
+
+event WeaponFired {
+	From: Server,
+	Type: Unreliable,
+	Call: SingleSync,
+	Data: struct {
+		Muzzle: Instance(Attachment)?,
+	}
+}

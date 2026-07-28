@@ -100,6 +100,8 @@ function Private.OnFireWeaponRequest(player: Player, payload: { Direction: Vecto
 		return
 	end
 
+	Network.WeaponFired.FireExcept(player, { Muzzle = muzzle })
+
 	local origin = muzzle.WorldPosition
 	local result = Private.RaycastWeapon(character, origin, payload.Direction, weaponConfig)
 
