@@ -4,6 +4,7 @@ export type ZombieConfigType = {
 	WalkSpeed: number,
 	Damage: number,
 	AttackCooldown: number,
+	AttackRange: number,
 	ModelReference: Model,
 }
 

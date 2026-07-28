@@ -12,6 +12,7 @@ local Config: { [string]: Types.ZombieConfigType } = {
 		WalkSpeed = 8,
 		Damage = 10,
 		AttackCooldown = 1,
+		AttackRange = 5,
 		ModelReference = ZombiesFolder.Basic,
 	},
 }

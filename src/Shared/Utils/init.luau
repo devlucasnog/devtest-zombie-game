@@ -3,5 +3,5 @@ local NumberUtils = require(script.NumberUtils)
 
 return {
 	WeaponUtils = WeaponUtils,
-	NumberUtils = NumberUtils
+	NumberUtils = NumberUtils,
 }
