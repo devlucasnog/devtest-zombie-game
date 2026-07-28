@@ -8,6 +8,7 @@ local Janitor = require(ReplicatedStorage.Packages.Janitor)
 local ProfileService = require(ServerScriptService.Server.Core.ProfileService.ProfileService)
 local Config = require(ReplicatedStorage.Shared.Config)
 local Types = require(ReplicatedStorage.Shared.Types)
+local Utils = require(ReplicatedStorage.Shared.Utils)
 local Signals = require(ServerScriptService.Server.Signals)
 local Network = require(ServerScriptService.Server.Network)
 
@@ -15,6 +16,7 @@ local DEFAULT_WEAPON = "Pistol"
 local DEBUG_RAY_LIFETIME = 1
 
 local WeaponConfig = Config.WeaponConfig
+local WeaponUtils = Utils.WeaponUtils
 
 local playerJanitors: { [Player]: Types.JanitorType } = {}
 
@@ -73,14 +75,13 @@ function Private.OnFireWeaponRequest(player: Player, payload: { Direction: Vecto
 		return
 	end
 
-	local weaponTool = character:FindFirstChildOfClass("Tool")
-	if not weaponTool then
+	local weapon = WeaponUtils.GetWeaponFromCharacter(character)
+	if not weapon then
 		return
 	end
 
-	local handle = weaponTool:FindFirstChild("Handle")
-	local muzzle = handle and handle:FindFirstChild("Muzzle")
-	if not (muzzle and muzzle:IsA("Attachment")) then
+	local muzzle = WeaponUtils.GetMuzzle(weapon)
+	if not muzzle then
 		return
 	end
 

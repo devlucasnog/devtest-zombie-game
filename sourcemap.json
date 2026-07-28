@@ -2142,6 +2142,22 @@
                   ]
                 }
               ]
+            },
+            {
+              "name": "Utils",
+              "className": "ModuleScript",
+              "filePaths": [
+                "src/Shared\\Utils\\init.luau"
+              ],
+              "children": [
+                {
+                  "name": "WeaponUtils",
+                  "className": "ModuleScript",
+                  "filePaths": [
+                    "src/Shared\\Utils\\WeaponUtils.luau"
+                  ]
+                }
+              ]
             }
           ]
         }
