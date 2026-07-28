@@ -189,13 +189,15 @@ function ZombieComponent:_TryAttack(target: Target)
 
 	local track = self._animationTracks.Attack
 
-	track:GetMarkerReachedSignal("Hit"):Once(function()
+	local hitConnection: RBXScriptConnection
+	hitConnection = track:GetMarkerReachedSignal("Hit"):Once(function()
 		if target.Humanoid.Health > 0 then
 			target.Humanoid:TakeDamage(self._config.Damage)
 		end
 	end)
 
 	track.Stopped:Once(function()
+		hitConnection:Disconnect()
 		self._isAttacking = false
 		self._idleUntil = os.clock() + self._config.AttackCooldown
 		self:_SetState(ZombieState.Idle)
