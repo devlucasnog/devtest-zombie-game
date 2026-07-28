@@ -173,11 +173,25 @@ function SerdesFunctions.ReadEVENT_FireWeapon(): ({ Direction: Vector3 })
 	return Value
 end
 
+function SerdesFunctions.WriteEVENT_AmmoUpdated(Value: { Current: number, Max: number }): ()
+	-- Allocate BLOCK: 3 bytes
+	local BLOCK_START = Allocate(3)
+	buffer.writeu8(SendBuffer, BLOCK_START + 0, 1)
+	buffer.writeu8(SendBuffer, BLOCK_START + 1, Value.Current)
+	buffer.writeu8(SendBuffer, BLOCK_START + 2, Value.Max)
+end
+
 if not RunService:IsRunning() then
 	local NOOP = function() end
 	local Returns = table.freeze({
 	FireWeapon = {
 		On = NOOP
+	},
+	AmmoUpdated = {
+		Fire = NOOP,
+		FireAll = NOOP,
+		FireList = NOOP,
+		FireExcept = NOOP
 	},
 	})
 	return Returns :: BLINK_EVENTS_SYMBOL
@@ -290,6 +304,52 @@ local Returns = table.freeze({
 				end
 			end
 		end
+	},
+	AmmoUpdated = {
+		Fire = function(Player: Player, Value: { Current: number, Max: number }): ()
+			Load(PlayersMap[Player])
+			SerdesFunctions.WriteEVENT_AmmoUpdated(Value)
+			PlayersMap[Player] = Save()
+		end,
+		FireAll = function(Value: { Current: number, Max: number }): ()
+			Load()
+			SerdesFunctions.WriteEVENT_AmmoUpdated(Value)
+			local Buffer, Size, Instances = SendBuffer, SendCursor, SendInstances
+			for _, Player in Players:GetPlayers() do
+				Load(PlayersMap[Player])
+				local Position = Allocate(Size)
+				buffer.copy(SendBuffer, Position, Buffer, 0, Size)
+				table.move(Instances, 1, #Instances, #SendInstances + 1, SendInstances)
+				PlayersMap[Player] = Save()
+			end
+		end,
+		FireList = function(List: {Player}, Value: { Current: number, Max: number }): ()
+			Load()
+			SerdesFunctions.WriteEVENT_AmmoUpdated(Value)
+			local Buffer, Size, Instances = SendBuffer, SendCursor, SendInstances
+			for _, Player in List do
+				Load(PlayersMap[Player])
+				local Position = Allocate(Size)
+				buffer.copy(SendBuffer, Position, Buffer, 0, Size)
+				table.move(Instances, 1, #Instances, #SendInstances + 1, SendInstances)
+				PlayersMap[Player] = Save()
+			end
+		end,
+		FireExcept = function(Except: Player, Value: { Current: number, Max: number }): ()
+			Load()
+			SerdesFunctions.WriteEVENT_AmmoUpdated(Value)
+			local Buffer, Size, Instances = SendBuffer, SendCursor, SendInstances
+			for _, Player in Players:GetPlayers() do
+				if Player == Except then
+					continue
+				end
+				Load(PlayersMap[Player])
+				local Position = Allocate(Size)
+				buffer.copy(SendBuffer, Position, Buffer, 0, Size)
+				table.move(Instances, 1, #Instances, #SendInstances + 1, SendInstances)
+				PlayersMap[Player] = Save()
+			end
+		end,
 	},
 })
 type BLINK_EVENTS_SYMBOL = typeof(Returns)

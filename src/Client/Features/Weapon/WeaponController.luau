@@ -3,8 +3,10 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
 
+local Charm = require(ReplicatedStorage.Packages.Charm)
 local Janitor = require(ReplicatedStorage.Packages.Janitor)
 local SmoothShiftLock = require(ReplicatedStorage.Packages.SmoothShiftLock)
+local Store = require(ReplicatedStorage.Shared.Store)
 local Network = require(script.Parent.Parent.Parent.Network)
 
 local WEAPON_TAG = "Weapon"
@@ -70,6 +72,11 @@ end
 
 function Private.OnFireAction(_actionName: string, inputState: Enum.UserInputState)
 	if inputState ~= Enum.UserInputState.Begin or not equippedWeapon then
+		return Enum.ContextActionResult.Pass
+	end
+
+	local ammo = Charm.peek(Store.Ammo)
+	if ammo.Current <= 0 then
 		return Enum.ContextActionResult.Pass
 	end
 

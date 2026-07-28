@@ -19,6 +19,7 @@ local WeaponConfig = Config.WeaponConfig
 local WeaponUtils = Utils.WeaponUtils
 
 local playerJanitors: { [Player]: Types.JanitorType } = {}
+local playerAmmo: { [Player]: number } = {}
 
 local Private = {}
 local Shared = {}
@@ -49,17 +50,19 @@ function Private.OnProfileLoaded(player: Player)
 
 	janitor:Add(
 		player.CharacterAdded:Connect(function()
-			Private.GiveWeapon(player, weaponConfig.ToolReference)
+			Private.GiveWeapon(player, weaponConfig)
 		end),
 		"Disconnect"
 	)
 
 	if player.Character then
-		Private.GiveWeapon(player, weaponConfig.ToolReference)
+		Private.GiveWeapon(player, weaponConfig)
 	end
 end
 
 function Private.OnPlayerRemoving(player: Player)
+	playerAmmo[player] = nil
+
 	local janitor = playerJanitors[player]
 	if not janitor then
 		return
@@ -100,6 +103,14 @@ function Private.OnFireWeaponRequest(player: Player, payload: { Direction: Vecto
 		return
 	end
 
+	local ammo = playerAmmo[player]
+	if not ammo or ammo <= 0 then
+		return
+	end
+
+	playerAmmo[player] = ammo - 1
+	Network.AmmoUpdated.Fire(player, { Current = ammo - 1, Max = weaponConfig.MaxAmmo })
+
 	local raycastParams = RaycastParams.new()
 	raycastParams.FilterType = Enum.RaycastFilterType.Exclude
 	raycastParams.FilterDescendantsInstances = { character }
@@ -122,14 +133,17 @@ function Private.OnFireWeaponRequest(player: Player, payload: { Direction: Vecto
 	print(`{player.Name} hit {result.Instance:GetFullName()}`)
 end
 
-function Private.GiveWeapon(player: Player, weaponTool: Tool)
+function Private.GiveWeapon(player: Player, weaponConfig: Types.WeaponConfigType)
 	local character = player.Character
 	if not character then
 		return
 	end
 
-	local weapon = weaponTool:Clone()
+	local weapon = weaponConfig.ToolReference:Clone()
 	weapon.Parent = character
+
+	playerAmmo[player] = weaponConfig.MaxAmmo
+	Network.AmmoUpdated.Fire(player, { Current = weaponConfig.MaxAmmo, Max = weaponConfig.MaxAmmo })
 end
 
 function Private.DrawDebugRay(origin: Vector3, endPosition: Vector3)

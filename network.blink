@@ -9,3 +9,13 @@ event FireWeapon {
 		Direction: vector,
 	}
 }
+
+event AmmoUpdated {
+	From: Server,
+	Type: Reliable,
+	Call: SingleSync,
+	Data: struct {
+		Current: u8,
+		Max: u8,
+	}
+}
