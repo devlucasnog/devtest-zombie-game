@@ -193,11 +193,15 @@ function SerdesFunctions.WriteEVENT_MatchUpdated(Value: { State: string, Round: 
 	buffer.writeu16(SendBuffer, BLOCK_START + 4, Value.Duration)
 end
 
-function SerdesFunctions.WriteEVENT_WeaponFired(Value: { Muzzle: Attachment? }): ()
-	-- Allocate BLOCK: 1 bytes
-	local BLOCK_START = Allocate(1)
+function SerdesFunctions.WriteEVENT_WeaponFired(Value: { Muzzle: Attachment?, EndPoint: Vector3 }): ()
+	-- Allocate BLOCK: 13 bytes
+	local BLOCK_START = Allocate(13)
 	buffer.writeu8(SendBuffer, BLOCK_START + 0, 0)
 	table.insert(SendInstances, Value.Muzzle or Null)
+	local Vector = Value.EndPoint
+	buffer.writef32(SendBuffer, BLOCK_START + 1, Vector.X)
+	buffer.writef32(SendBuffer, BLOCK_START + 5, Vector.Y)
+	buffer.writef32(SendBuffer, BLOCK_START + 9, Vector.Z)
 end
 
 if not RunService:IsRunning() then
@@ -429,21 +433,21 @@ local Returns = table.freeze({
 		end,
 	},
 	WeaponFired = {
-		Fire = function(Player: Player, Value: { Muzzle: Attachment? }): ()
+		Fire = function(Player: Player, Value: { Muzzle: Attachment?, EndPoint: Vector3 }): ()
 			Load()
 			SerdesFunctions.WriteEVENT_WeaponFired(Value)
 			local Buffer = buffer.create(SendCursor)
 			buffer.copy(Buffer, 0, SendBuffer, 0, SendCursor)
 			Unreliable:FireClient(Player, Buffer, SendInstances)
 		end,
-		FireAll = function(Value: { Muzzle: Attachment? }): ()
+		FireAll = function(Value: { Muzzle: Attachment?, EndPoint: Vector3 }): ()
 			Load()
 			SerdesFunctions.WriteEVENT_WeaponFired(Value)
 			local Buffer = buffer.create(SendCursor)
 			buffer.copy(Buffer, 0, SendBuffer, 0, SendCursor)
 			Unreliable:FireAllClients(Buffer, SendInstances)
 		end,
-		FireList = function(List: {Player}, Value: { Muzzle: Attachment? }): ()
+		FireList = function(List: {Player}, Value: { Muzzle: Attachment?, EndPoint: Vector3 }): ()
 			Load()
 			SerdesFunctions.WriteEVENT_WeaponFired(Value)
 			local Buffer = buffer.create(SendCursor)
@@ -452,7 +456,7 @@ local Returns = table.freeze({
 				Unreliable:FireClient(Player, Buffer, SendInstances)
 			end
 		end,
-		FireExcept = function(Except: Player, Value: { Muzzle: Attachment? }): ()
+		FireExcept = function(Except: Player, Value: { Muzzle: Attachment?, EndPoint: Vector3 }): ()
 			Load()
 			SerdesFunctions.WriteEVENT_WeaponFired(Value)
 			local Buffer = buffer.create(SendCursor)

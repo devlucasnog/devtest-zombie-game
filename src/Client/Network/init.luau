@@ -193,7 +193,9 @@ function SerdesFunctions.ReadEVENT_MatchUpdated(): ({ State: string, Round: numb
 	return Value
 end
 
-function SerdesFunctions.ReadEVENT_WeaponFired(): ({ Muzzle: Attachment? })
+function SerdesFunctions.ReadEVENT_WeaponFired(): ({ Muzzle: Attachment?, EndPoint: Vector3 })
+	-- Read BLOCK: 12 bytes
+	local BLOCK_START = Read(12)
 	local Value = {} :: any
 	RecieveInstanceCursor += 1
 	if typeof(RecieveInstances[RecieveInstanceCursor]) == "Instance" then
@@ -203,6 +205,10 @@ function SerdesFunctions.ReadEVENT_WeaponFired(): ({ Muzzle: Attachment? })
 		if typeof(Value.Muzzle) ~= "Instance" then error(`Expected an Instance, got {typeof(Value.Muzzle)} instead.`) end
 		if not Value.Muzzle:IsA("Attachment") then error(`Expected an Instance of type "Attachment", got "{Value.Muzzle.ClassName}" instead.`) end
 	end
+	local X = buffer.readf32(RecieveBuffer, BLOCK_START + 0)
+	local Y = buffer.readf32(RecieveBuffer, BLOCK_START + 4)
+	local Z = buffer.readf32(RecieveBuffer, BLOCK_START + 8)
+	Value.EndPoint = Vector3.new(X, Y, Z)
 	return Value
 end
 
@@ -304,7 +310,7 @@ Unreliable.OnClientEvent:Connect(function(Buffer: buffer, Instances: {Instance})
 		local BLOCK_START = Read(1)
 		local Index = buffer.readu8(RecieveBuffer, BLOCK_START + 0)
 		if Index == 0 then
-			local Value: { Muzzle: Attachment? } = SerdesFunctions.ReadEVENT_WeaponFired()
+			local Value: { Muzzle: Attachment?, EndPoint: Vector3 } = SerdesFunctions.ReadEVENT_WeaponFired()
 			if Events.Unreliable[0] ~= nil then
 				SerdesEvent = "WeaponFired"
 				Events.Unreliable[0](Value)
@@ -351,7 +357,7 @@ local Returns = table.freeze({
 		end
 	},
 	WeaponFired = {
-		On = function(Listener: (Value: { Muzzle: Attachment? }) -> ()): () -> ()
+		On = function(Listener: (Value: { Muzzle: Attachment?, EndPoint: Vector3 }) -> ()): () -> ()
 			Events.Unreliable[0] = Listener
 			return function (): ()
 				if Events.Unreliable[0] == Listener then

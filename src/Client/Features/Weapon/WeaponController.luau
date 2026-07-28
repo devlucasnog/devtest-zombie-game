@@ -16,6 +16,7 @@ local VFXUtils = Utils.VFXUtils
 local WEAPON_TAG = "Weapon"
 local SHIFT_LOCK_TOGGLE_ACTION = "ShiftLockSwitchAction"
 local FIRE_WEAPON_ACTION = "FireWeapon"
+local LOCAL_TRACER_RANGE = 500
 
 local camera = Workspace.CurrentCamera
 local player = Players.LocalPlayer
@@ -84,10 +85,27 @@ function Private.OnFireAction(_actionName: string, inputState: Enum.UserInputSta
 		return Enum.ContextActionResult.Pass
 	end
 
-	Network.FireWeapon.Fire({ Direction = camera.CFrame.LookVector })
-	VFXUtils.PlayMuzzleFlash(WeaponUtils.GetMuzzle(equippedWeapon))
+	local direction = camera.CFrame.LookVector
+	Network.FireWeapon.Fire({ Direction = direction })
+
+	local muzzle = WeaponUtils.GetMuzzle(equippedWeapon)
+	VFXUtils.PlayMuzzleFlash(muzzle)
+
+	if muzzle then
+		local origin = muzzle.WorldPosition
+		VFXUtils.PlayTracer(origin, Private.PredictEndPoint(origin, direction))
+	end
 
 	return Enum.ContextActionResult.Sink
+end
+
+function Private.PredictEndPoint(origin: Vector3, direction: Vector3): Vector3
+	local raycastParams = RaycastParams.new()
+	raycastParams.FilterType = Enum.RaycastFilterType.Exclude
+	raycastParams.FilterDescendantsInstances = { player.Character }
+
+	local result = Workspace:Raycast(origin, direction * LOCAL_TRACER_RANGE, raycastParams)
+	return result and result.Position or origin + direction * LOCAL_TRACER_RANGE
 end
 
 return Shared

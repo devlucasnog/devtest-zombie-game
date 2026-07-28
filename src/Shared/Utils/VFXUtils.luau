@@ -1,7 +1,9 @@
 local Debris = game:GetService("Debris")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Workspace = game:GetService("Workspace")
 
 local DEFAULT_EMIT_COUNT = 10
+local TRACER_LIFETIME = 0.05
 
 local VFX = ReplicatedStorage.Assets.VFX
 
@@ -23,6 +25,19 @@ function Shared.PlayMuzzleFlash(muzzle: Attachment?)
 
 		Debris:AddItem(emitter, emitter.Lifetime.Max + 0.1)
 	end
+end
+
+function Shared.PlayTracer(origin: Vector3, endPoint: Vector3)
+	local tracer = VFX.BulletTracer:Clone()
+
+	local originPart = tracer:FindFirstChild("1") :: BasePart
+	local endPart = tracer:FindFirstChild("2") :: BasePart
+
+	originPart.Position = origin
+	endPart.Position = endPoint
+
+	tracer.Parent = Workspace
+	Debris:AddItem(tracer, TRACER_LIFETIME)
 end
 
 return Shared

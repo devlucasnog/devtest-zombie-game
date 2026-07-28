@@ -37,5 +37,6 @@ event WeaponFired {
 	Call: SingleSync,
 	Data: struct {
 		Muzzle: Instance(Attachment)?,
+		EndPoint: vector,
 	}
 }
