@@ -112,7 +112,7 @@ function Private.OnFireWeaponRequest(player: Player, payload: { Direction: Vecto
 		return
 	end
 
-	Private.TakeDamage(result.Instance.Name, hitHumanoid, weaponConfig)
+	Private.DealDamage(result.Instance.Name, hitCharacter, player, weaponConfig)
 end
 
 function Private.GetEquippedWeaponConfig(player: Player): (string?, Types.WeaponConfigType?)
@@ -215,14 +215,14 @@ function Private.GiveWeapon(player: Player, weaponConfig: Types.WeaponConfigType
 	Network.AmmoUpdated.Fire(player, { Current = weaponConfig.MaxAmmo, Max = weaponConfig.MaxAmmo })
 end
 
-function Private.TakeDamage(bodyPart: string, humanoid: Humanoid, weaponConfig: Types.WeaponConfigType)
+function Private.DealDamage(bodyPart: string, hitCharacter: Model, player: Player, weaponConfig: Types.WeaponConfigType)
 	local damage = weaponConfig.Damage
 
 	if bodyPart == "Head" then
 		damage += damage * weaponConfig.HeadMultiplier
 	end
 
-	humanoid:TakeDamage(damage)
+	Signals.CombatSignals.WeaponHit:Fire(hitCharacter, damage, player)
 end
 
 return Shared

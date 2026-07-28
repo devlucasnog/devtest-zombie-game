@@ -2389,6 +2389,13 @@
               ],
               "children": [
                 {
+                  "name": "CombatSignals",
+                  "className": "ModuleScript",
+                  "filePaths": [
+                    "src/Server\\Signals\\CombatSignals.luau"
+                  ]
+                },
+                {
                   "name": "MatchSignals",
                   "className": "ModuleScript",
                   "filePaths": [

@@ -1,14 +1,17 @@
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local ServerScriptService = game:GetService("ServerScriptService")
 
 local Component = require(ReplicatedStorage.Packages.Component)
 local Janitor = require(ReplicatedStorage.Packages.Janitor)
 local Config = require(ReplicatedStorage.Shared.Config)
 local Enums = require(ReplicatedStorage.Shared.Enums)
 local Types = require(ReplicatedStorage.Shared.Types)
+local MatchService = require(ServerScriptService.Server.Core.Match.MatchService)
 
 local TAG = "Zombie"
 local TARGET_REFRESH_INTERVAL = 0.25
+local CORPSE_DESPAWN_DELAY = 3
 
 type ZombieComponentType = Types.ZombieComponentType
 type Target = { RootPart: BasePart, Humanoid: Humanoid }
@@ -32,6 +35,7 @@ function ZombieComponent:Construct()
 	self._isAttacking = false
 	self._idleUntil = 0
 	self._targetElapsed = 0
+	self._lastAttacker = nil
 end
 
 function ZombieComponent:Start()
@@ -48,6 +52,22 @@ function ZombieComponent:Start()
 		Walk = self._janitor:Add(self._animator:LoadAnimation(Animations.Walk), "Destroy"),
 		Attack = self._janitor:Add(self._animator:LoadAnimation(Animations.Attack), "Destroy"),
 	}
+
+	self._janitor:Add(
+		self._humanoid.Died:Connect(function()
+			self:_OnDied()
+		end),
+		"Disconnect"
+	)
+end
+
+function ZombieComponent:TakeDamage(damage: number, attacker: Player)
+	if self._humanoid.Health <= 0 then
+		return
+	end
+
+	self._lastAttacker = attacker
+	self._humanoid:TakeDamage(damage)
 end
 
 function ZombieComponent:HeartbeatUpdate(dt: number)
@@ -82,6 +102,16 @@ end
 
 function ZombieComponent:Stop()
 	self._janitor:Destroy()
+end
+
+function ZombieComponent:_OnDied()
+	if self._lastAttacker then
+		MatchService.ReportZombieKilled(self._lastAttacker)
+	end
+
+	task.delay(CORPSE_DESPAWN_DELAY, function()
+		self.Instance:Destroy()
+	end)
 end
 
 function ZombieComponent:_FindNearestTarget(position: Vector3): Target?

@@ -104,7 +104,6 @@ end
 
 function Private.OnPlayerDied(player: Player)
 	playerAlive[player] = false
-	print(`[Match] {player.Name} died`)
 
 	if currentRound >= 1 and not Private.AnyPlayerAlive() then
 		Private.EndGame()
@@ -123,7 +122,6 @@ end
 
 function Private.TryStartMatch()
 	if matchState == MatchState.Waiting then
-		print(`[Match] Starting match`)
 		Private.StartIntermission(1)
 	end
 end
@@ -132,7 +130,6 @@ function Private.StartIntermission(nextRound: number)
 	matchState = MatchState.Intermission
 	phaseStartedAt = os.clock()
 	phaseDuration = MatchConfig.IntermissionDuration
-	print(`[Match] Intermission before round {nextRound} ({MatchConfig.IntermissionDuration}s)`)
 	Private.BroadcastMatchState()
 
 	matchJanitor:Add(
@@ -153,7 +150,6 @@ function Private.StartRound(roundNumber: number)
 	matchState = MatchState.RoundActive
 	phaseStartedAt = os.clock()
 	phaseDuration = roundDuration
-	print(`[Match] Round {roundNumber} started: {zombiesRemaining} zombies, {roundDuration}s duration`)
 	Private.BroadcastMatchState()
 	Signals.MatchSignals.RoundStarted:Fire(roundNumber, zombiesRemaining, roundDuration)
 end
@@ -177,11 +173,10 @@ function Private.EndGame()
 	phaseStartedAt = os.clock()
 	phaseDuration = MatchConfig.GameEndDisplayDuration
 	matchJanitor:Remove("IntermissionTimer")
-	print(`[Match] Game over!`)
 
 	local leaderboard = Private.BuildLeaderboard()
 	for index, entry in leaderboard do
-		print(`[Match] {index}. {entry.Name} - {entry.Points} pts`)
+		print(`{index}. {entry.Name} - {entry.Points} pts`)
 	end
 
 	Signals.MatchSignals.GameEnded:Fire(leaderboard)
@@ -212,11 +207,9 @@ function Shared.ReportZombieKilled(player: Player)
 
 	playerScores[player] = (playerScores[player] or 0) + MatchConfig.PointsPerKill
 	zombiesRemaining -= 1
-	print(`[Match] {player.Name} killed a zombie ({zombiesRemaining} remaining, {playerScores[player]} pts)`)
 
 	if zombiesRemaining <= 0 then
 		local clearedRound = currentRound
-		print(`[Match] Round {clearedRound} cleared`)
 		Signals.MatchSignals.RoundCleared:Fire(clearedRound)
 		Private.StartIntermission(clearedRound + 1)
 	end

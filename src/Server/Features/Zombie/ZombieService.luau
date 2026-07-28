@@ -5,6 +5,7 @@ local Workspace = game:GetService("Workspace")
 local Janitor = require(ReplicatedStorage.Packages.Janitor)
 local Config = require(ReplicatedStorage.Shared.Config)
 local Signals = require(ServerScriptService.Server.Signals)
+local ZombieComponent = require(script.Parent.Components.ZombieComponent)
 
 local DEFAULT_ZOMBIE_TYPE = "Basic"
 
@@ -23,6 +24,16 @@ function Shared.OnStart()
 
 	Signals.MatchSignals.RoundStarted:Connect(Private.OnRoundStarted)
 	Signals.MatchSignals.GameReset:Connect(Private.OnGameReset)
+	Signals.CombatSignals.WeaponHit:Connect(Private.OnWeaponHit)
+end
+
+function Private.OnWeaponHit(hitCharacter: Model, damage: number, attacker: Player)
+	local zombie = ZombieComponent:FromInstance(hitCharacter)
+	if not zombie then
+		return
+	end
+
+	zombie:TakeDamage(damage, attacker)
 end
 
 function Private.CreateFolder()
@@ -36,9 +47,7 @@ function Private.CreateFolder()
 	zombiesFolder = folder
 end
 
-function Private.OnRoundStarted(roundNumber: number, zombieCount: number)
-	print(`[Zombie] Spawning {zombieCount} zombies for round {roundNumber}`)
-
+function Private.OnRoundStarted(_roundNumber: number, zombieCount: number)
 	spawnJanitor:Add(
 		task.spawn(function()
 			for _ = 1, zombieCount do

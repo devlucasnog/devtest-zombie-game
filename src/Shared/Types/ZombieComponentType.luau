@@ -18,12 +18,16 @@ export type ZombieComponentType = {
 	_isAttacking: boolean,
 	_idleUntil: number,
 	_targetElapsed: number,
+	_lastAttacker: Player?,
 	_animationTracks: { Idle: AnimationTrack, Walk: AnimationTrack, Attack: AnimationTrack },
 
 	Construct: (self: ZombieComponentType) -> (),
 	Start: (self: ZombieComponentType) -> (),
 	Stop: (self: ZombieComponentType) -> (),
 	HeartbeatUpdate: (self: ZombieComponentType, dt: number) -> (),
+	TakeDamage: (self: ZombieComponentType, damage: number, attacker: Player) -> (),
+
+	_OnDied: (self: ZombieComponentType) -> (),
 
 	_FindNearestTarget: (
 		self: ZombieComponentType,
