@@ -39,6 +39,11 @@ export type ZombieComponentType = {
 		RootPart: BasePart,
 		Humanoid: Humanoid,
 	}) -> (),
+
+	_FaceTarget: (self: ZombieComponentType, target: {
+		RootPart: BasePart,
+		Humanoid: Humanoid,
+	}) -> (),
 }
 
 return {}

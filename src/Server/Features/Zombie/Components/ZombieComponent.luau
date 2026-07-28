@@ -104,7 +104,17 @@ function ZombieComponent:_SetState(
 		self._humanoid:MoveTo((target).RootPart.Position)
 	elseif state == ZombieState.Attacking then
 		self._humanoid:MoveTo(self._rootPart.Position)
+		self:_FaceTarget(target)
 		self:_TryAttack(target)
+	end
+end
+
+function ZombieComponent:_FaceTarget(target: Target)
+	local rootPosition = self._rootPart.Position
+	local lookAt = Vector3.new(target.RootPart.Position.X, rootPosition.Y, target.RootPart.Position.Z)
+
+	if (lookAt - rootPosition).Magnitude > 0 then
+		self._rootPart.CFrame = CFrame.lookAt(rootPosition, lookAt)
 	end
 end
 

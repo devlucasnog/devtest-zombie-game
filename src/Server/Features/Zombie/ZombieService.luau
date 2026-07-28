@@ -69,7 +69,7 @@ function Private.SpawnZombie()
 	local zombieConfig = ZombieConfig[DEFAULT_ZOMBIE_TYPE]
 
 	local zombie = zombieConfig.ModelReference:Clone()
-	zombie:PivotTo(spawnPoint.CFrame)
+	zombie:PivotTo(spawnPoint.CFrame + Vector3.new(0, 4, 0))
 	zombie.Parent = zombiesFolder
 end
 
