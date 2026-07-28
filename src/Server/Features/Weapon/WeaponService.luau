@@ -5,7 +5,6 @@ local Workspace = game:GetService("Workspace")
 
 local Janitor = require(ReplicatedStorage.Packages.Janitor)
 local ProfileService = require(ServerScriptService.Server.Core.ProfileService.ProfileService)
-local Config = require(ReplicatedStorage.Shared.Config)
 local WeaponConfig = require(ReplicatedStorage.Shared.Config.WeaponConfig)
 local Types = require(ReplicatedStorage.Shared.Types)
 local Utils = require(ReplicatedStorage.Shared.Utils)
@@ -13,9 +12,7 @@ local Signals = require(ServerScriptService.Server.Signals)
 local Network = require(ServerScriptService.Server.Network)
 
 local DEFAULT_WEAPON = "Pistol"
-local DEBUG_RAY_LIFETIME = 1
 
-local WeaponConfig = Config.WeaponConfig
 local WeaponUtils = Utils.WeaponUtils
 
 local playerJanitors: { [Player]: Types.JanitorType } = {}

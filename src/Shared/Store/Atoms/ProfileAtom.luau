@@ -9,7 +9,7 @@ local DefaultState: ProfileState = {
 	Currencies = {
 		Cash = 0,
 	},
-	WeaponEquipped = "Pistol"
+	WeaponEquipped = "Pistol",
 }
 
 return Charm.atom(DefaultState)

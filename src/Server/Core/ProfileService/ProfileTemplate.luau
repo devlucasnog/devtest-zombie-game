@@ -6,7 +6,7 @@ local ProfileTemplate: Types.ProfileType = {
 	Currencies = {
 		Cash = 0,
 	},
-	WeaponEquipped = "Pistol"
+	WeaponEquipped = "Pistol",
 }
 
 return ProfileTemplate

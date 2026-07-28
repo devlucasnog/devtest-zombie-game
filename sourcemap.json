@@ -2076,6 +2076,13 @@
               ],
               "children": [
                 {
+                  "name": "MatchConfig",
+                  "className": "ModuleScript",
+                  "filePaths": [
+                    "src/Shared\\Config\\MatchConfig.luau"
+                  ]
+                },
+                {
                   "name": "WeaponConfig",
                   "className": "ModuleScript",
                   "filePaths": [
@@ -2128,6 +2135,20 @@
                   ]
                 },
                 {
+                  "name": "ProfileType",
+                  "className": "ModuleScript",
+                  "filePaths": [
+                    "src/Shared\\Types\\ProfileType.luau"
+                  ]
+                },
+                {
+                  "name": "LeaderboardEntryType",
+                  "className": "ModuleScript",
+                  "filePaths": [
+                    "src/Shared\\Types\\LeaderboardEntryType.luau"
+                  ]
+                },
+                {
                   "name": "JanitorType",
                   "className": "ModuleScript",
                   "filePaths": [
@@ -2139,13 +2160,6 @@
                   "className": "ModuleScript",
                   "filePaths": [
                     "src/Shared\\Types\\ProfileActionType.luau"
-                  ]
-                },
-                {
-                  "name": "ProfileType",
-                  "className": "ModuleScript",
-                  "filePaths": [
-                    "src/Shared\\Types\\ProfileType.luau"
                   ]
                 },
                 {
@@ -2169,6 +2183,22 @@
                   "className": "ModuleScript",
                   "filePaths": [
                     "src/Shared\\Utils\\WeaponUtils.luau"
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Enums",
+              "className": "ModuleScript",
+              "filePaths": [
+                "src/Shared\\Enums\\init.luau"
+              ],
+              "children": [
+                {
+                  "name": "MatchState",
+                  "className": "ModuleScript",
+                  "filePaths": [
+                    "src/Shared\\Enums\\MatchState.luau"
                   ]
                 }
               ]
@@ -2219,13 +2249,6 @@
           "className": "Folder",
           "children": [
             {
-              "name": "Bootstrap",
-              "className": "Script",
-              "filePaths": [
-                "src/Server\\Bootstrap.server.luau"
-              ]
-            },
-            {
               "name": "Core",
               "className": "Folder",
               "children": [
@@ -2234,17 +2257,30 @@
                   "className": "Folder",
                   "children": [
                     {
+                      "name": "ProfileTemplate",
+                      "className": "ModuleScript",
+                      "filePaths": [
+                        "src/Server\\Core\\ProfileService\\ProfileTemplate.luau"
+                      ]
+                    },
+                    {
                       "name": "ProfileService",
                       "className": "ModuleScript",
                       "filePaths": [
                         "src/Server\\Core\\ProfileService\\ProfileService.luau"
                       ]
-                    },
+                    }
+                  ]
+                },
+                {
+                  "name": "MatchService",
+                  "className": "Folder",
+                  "children": [
                     {
-                      "name": "ProfileTemplate",
+                      "name": "MatchService",
                       "className": "ModuleScript",
                       "filePaths": [
-                        "src/Server\\Core\\ProfileService\\ProfileTemplate.luau"
+                        "src/Server\\Core\\MatchService\\MatchService.luau"
                       ]
                     }
                   ]
@@ -2285,12 +2321,26 @@
               ],
               "children": [
                 {
+                  "name": "MatchSignals",
+                  "className": "ModuleScript",
+                  "filePaths": [
+                    "src/Server\\Signals\\MatchSignals.luau"
+                  ]
+                },
+                {
                   "name": "ProfileSignals",
                   "className": "ModuleScript",
                   "filePaths": [
                     "src/Server\\Signals\\ProfileSignals.luau"
                   ]
                 }
+              ]
+            },
+            {
+              "name": "Bootstrap",
+              "className": "Script",
+              "filePaths": [
+                "src/Server\\Bootstrap.server.luau"
               ]
             }
           ]
@@ -2309,13 +2359,6 @@
               "name": "Client",
               "className": "Folder",
               "children": [
-                {
-                  "name": "Bootstrap",
-                  "className": "LocalScript",
-                  "filePaths": [
-                    "src/Client\\Bootstrap.client.luau"
-                  ]
-                },
                 {
                   "name": "Core",
                   "className": "Folder",
@@ -2386,6 +2429,13 @@
                         "src/Client\\Utils\\UIScaler.client.luau"
                       ]
                     }
+                  ]
+                },
+                {
+                  "name": "Bootstrap",
+                  "className": "LocalScript",
+                  "filePaths": [
+                    "src/Client\\Bootstrap.client.luau"
                   ]
                 }
               ]
