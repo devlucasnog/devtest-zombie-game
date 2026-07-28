@@ -13,9 +13,12 @@ export type ZombieComponentType = {
 	_config: ZombieConfigType.ZombieConfigType,
 	_state: string,
 	_humanoid: Humanoid,
+	_animator: Animator,
 	_rootPart: BasePart,
-	_lastAttackTime: number,
+	_isAttacking: boolean,
+	_idleUntil: number,
 	_targetElapsed: number,
+	_animationTracks: { Idle: AnimationTrack, Walk: AnimationTrack, Attack: AnimationTrack },
 
 	Construct: (self: ZombieComponentType) -> (),
 	Start: (self: ZombieComponentType) -> (),
@@ -44,6 +47,8 @@ export type ZombieComponentType = {
 		RootPart: BasePart,
 		Humanoid: Humanoid,
 	}) -> (),
+
+	_PlayAnimation: (self: ZombieComponentType, name: string) -> (),
 }
 
 return {}

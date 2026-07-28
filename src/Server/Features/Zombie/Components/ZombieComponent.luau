@@ -15,6 +15,13 @@ type Target = { RootPart: BasePart, Humanoid: Humanoid }
 
 local ZombieConfig = Config.ZombieConfig
 local ZombieState = Enums.ZombieState
+local Animations = ReplicatedStorage.Assets.Animations.Zombie
+
+local STATE_ANIMATIONS = {
+	[ZombieState.Idle] = "Idle",
+	[ZombieState.Chasing] = "Walk",
+	[ZombieState.Attacking] = "Attack",
+}
 
 local ZombieComponent = Component.new({ Tag = TAG, Ancestors = { workspace } }) :: ZombieComponentType
 
@@ -22,17 +29,25 @@ function ZombieComponent:Construct()
 	self._janitor = Janitor.new()
 	self._config = ZombieConfig[self.Instance.Name]
 	self._state = ZombieState.Idle
-	self._lastAttackTime = 0
+	self._isAttacking = false
+	self._idleUntil = 0
 	self._targetElapsed = 0
 end
 
 function ZombieComponent:Start()
 	self._humanoid = self.Instance.Humanoid
+	self._animator = self.Instance.Humanoid.Animator
 	self._rootPart = self.Instance.HumanoidRootPart
 
 	self._humanoid.MaxHealth = self._config.Health
 	self._humanoid.Health = self._config.Health
 	self._humanoid.WalkSpeed = self._config.WalkSpeed
+
+	self._animationTracks = {
+		Idle = self._janitor:Add(self._animator:LoadAnimation(Animations.Idle), "Destroy"),
+		Walk = self._janitor:Add(self._animator:LoadAnimation(Animations.Walk), "Destroy"),
+		Attack = self._janitor:Add(self._animator:LoadAnimation(Animations.Attack), "Destroy"),
+	}
 end
 
 function ZombieComponent:HeartbeatUpdate(dt: number)
@@ -45,6 +60,11 @@ function ZombieComponent:HeartbeatUpdate(dt: number)
 		return
 	end
 	self._targetElapsed = 0
+
+	if os.clock() < self._idleUntil then
+		self:_SetState(ZombieState.Idle)
+		return
+	end
 
 	local target = self:_FindNearestTarget(self._rootPart.Position)
 	if not target then
@@ -93,7 +113,7 @@ function ZombieComponent:_SetState(
 	}
 )
 	if state ~= self._state then
-		print(`[Zombie] {self.Instance.Name} -> {state}`)
+		self:_PlayAnimation(STATE_ANIMATIONS[state])
 	end
 
 	self._state = state
@@ -109,6 +129,18 @@ function ZombieComponent:_SetState(
 	end
 end
 
+function ZombieComponent:_PlayAnimation(name: string)
+	for trackName, track in self._animationTracks do
+		if trackName == name then
+			if not track.IsPlaying then
+				track:Play()
+			end
+		elseif track.IsPlaying then
+			track:Stop()
+		end
+	end
+end
+
 function ZombieComponent:_FaceTarget(target: Target)
 	local rootPosition = self._rootPart.Position
 	local lookAt = Vector3.new(target.RootPart.Position.X, rootPosition.Y, target.RootPart.Position.Z)
@@ -118,16 +150,26 @@ function ZombieComponent:_FaceTarget(target: Target)
 	end
 end
 
-function ZombieComponent:_TryAttack(target: {
-	RootPart: BasePart,
-	Humanoid: Humanoid,
-})
-	if os.clock() - self._lastAttackTime < self._config.AttackCooldown then
+function ZombieComponent:_TryAttack(target: Target)
+	if self._isAttacking then
 		return
 	end
 
-	self._lastAttackTime = os.clock()
-	target.Humanoid:TakeDamage(self._config.Damage)
+	self._isAttacking = true
+
+	local track = self._animationTracks.Attack
+
+	track:GetMarkerReachedSignal("Hit"):Once(function()
+		if target.Humanoid.Health > 0 then
+			target.Humanoid:TakeDamage(self._config.Damage)
+		end
+	end)
+
+	track.Stopped:Once(function()
+		self._isAttacking = false
+		self._idleUntil = os.clock() + self._config.AttackCooldown
+		self:_SetState(ZombieState.Idle)
+	end)
 end
 
 return ZombieComponent
