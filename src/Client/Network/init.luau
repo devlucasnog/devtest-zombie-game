@@ -161,6 +161,7 @@ local Queue: any = {
 local SerdesEvent = "?"
 local SerdesThread: thread?
 Queue.Reliable[1] = table.create(256)
+Queue.Reliable[2] = table.create(256)
 function SerdesFunctions.WriteEVENT_FireWeapon(Value: { Direction: Vector3 }): ()
 	-- Allocate BLOCK: 13 bytes
 	local BLOCK_START = Allocate(13)
@@ -180,6 +181,17 @@ function SerdesFunctions.ReadEVENT_AmmoUpdated(): ({ Current: number, Max: numbe
 	return Value
 end
 
+function SerdesFunctions.ReadEVENT_MatchUpdated(): ({ State: string, Round: number, Duration: number })
+	-- Read BLOCK: 5 bytes
+	local BLOCK_START = Read(5)
+	local Value = {} :: any
+	local Length = buffer.readu16(RecieveBuffer, BLOCK_START + 0)
+	Value.State = buffer.readstring(RecieveBuffer, Read(Length), Length)
+	Value.Round = buffer.readu8(RecieveBuffer, BLOCK_START + 2)
+	Value.Duration = buffer.readu16(RecieveBuffer, BLOCK_START + 3)
+	return Value
+end
+
 if not RunService:IsRunning() then
 	local NOOP = function() end
 	local Returns = table.freeze({
@@ -187,6 +199,9 @@ if not RunService:IsRunning() then
 		Fire = NOOP
 	},
 	AmmoUpdated = {
+		On = NOOP
+	},
+	MatchUpdated = {
 		On = NOOP
 	},
 	})
@@ -242,6 +257,17 @@ Reliable.OnClientEvent:Connect(function(Buffer: buffer, Instances: {Instance})
 				end
 				table.insert(Queue.Reliable[1], {Value} :: {any})
 			end
+		elseif Index == 2 then
+			local Value: { State: string, Round: number, Duration: number } = SerdesFunctions.ReadEVENT_MatchUpdated()
+			if Events.Reliable[2] ~= nil then
+				SerdesEvent = "MatchUpdated"
+				Events.Reliable[2](Value)
+			else
+				if #Queue.Reliable[2] > 256 then
+					warn("[Blink]: Event queue of \"MatchUpdated\" exceeded 256, did you forget to implement a listener?")
+				end
+				table.insert(Queue.Reliable[2], {Value} :: {any})
+			end
 		end
 	end
 end)
@@ -282,6 +308,20 @@ local Returns = table.freeze({
 			return function (): ()
 				if Events.Reliable[1] == Listener then
 					Events.Reliable[1] = nil
+				end
+			end
+		end
+	},
+	MatchUpdated = {
+		On = function(Listener: (Value: { State: string, Round: number, Duration: number }) -> ()): () -> ()
+			Events.Reliable[2] = Listener
+			for Index, Arguments in Queue.Reliable[2] do
+				Listener(table.unpack(Arguments))
+			end
+			Queue.Reliable[2] = {}
+			return function (): ()
+				if Events.Reliable[2] == Listener then
+					Events.Reliable[2] = nil
 				end
 			end
 		end

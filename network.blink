@@ -19,3 +19,14 @@ event AmmoUpdated {
 		Max: u8,
 	}
 }
+
+event MatchUpdated {
+	From: Server,
+	Type: Reliable,
+	Call: SingleSync,
+	Data: struct {
+		State: string,
+		Round: u8,
+		Duration: u16,
+	}
+}

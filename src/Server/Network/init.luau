@@ -181,6 +181,18 @@ function SerdesFunctions.WriteEVENT_AmmoUpdated(Value: { Current: number, Max: n
 	buffer.writeu8(SendBuffer, BLOCK_START + 2, Value.Max)
 end
 
+function SerdesFunctions.WriteEVENT_MatchUpdated(Value: { State: string, Round: number, Duration: number }): ()
+	-- Allocate BLOCK: 6 bytes
+	local BLOCK_START = Allocate(6)
+	buffer.writeu8(SendBuffer, BLOCK_START + 0, 2)
+	local Length = #Value.State
+	buffer.writeu16(SendBuffer, BLOCK_START + 1, Length)
+	Allocate(Length)
+	buffer.writestring(SendBuffer, SendOffset, Value.State, Length)
+	buffer.writeu8(SendBuffer, BLOCK_START + 3, Value.Round)
+	buffer.writeu16(SendBuffer, BLOCK_START + 4, Value.Duration)
+end
+
 if not RunService:IsRunning() then
 	local NOOP = function() end
 	local Returns = table.freeze({
@@ -188,6 +200,12 @@ if not RunService:IsRunning() then
 		On = NOOP
 	},
 	AmmoUpdated = {
+		Fire = NOOP,
+		FireAll = NOOP,
+		FireList = NOOP,
+		FireExcept = NOOP
+	},
+	MatchUpdated = {
 		Fire = NOOP,
 		FireAll = NOOP,
 		FireList = NOOP,
@@ -338,6 +356,52 @@ local Returns = table.freeze({
 		FireExcept = function(Except: Player, Value: { Current: number, Max: number }): ()
 			Load()
 			SerdesFunctions.WriteEVENT_AmmoUpdated(Value)
+			local Buffer, Size, Instances = SendBuffer, SendCursor, SendInstances
+			for _, Player in Players:GetPlayers() do
+				if Player == Except then
+					continue
+				end
+				Load(PlayersMap[Player])
+				local Position = Allocate(Size)
+				buffer.copy(SendBuffer, Position, Buffer, 0, Size)
+				table.move(Instances, 1, #Instances, #SendInstances + 1, SendInstances)
+				PlayersMap[Player] = Save()
+			end
+		end,
+	},
+	MatchUpdated = {
+		Fire = function(Player: Player, Value: { State: string, Round: number, Duration: number }): ()
+			Load(PlayersMap[Player])
+			SerdesFunctions.WriteEVENT_MatchUpdated(Value)
+			PlayersMap[Player] = Save()
+		end,
+		FireAll = function(Value: { State: string, Round: number, Duration: number }): ()
+			Load()
+			SerdesFunctions.WriteEVENT_MatchUpdated(Value)
+			local Buffer, Size, Instances = SendBuffer, SendCursor, SendInstances
+			for _, Player in Players:GetPlayers() do
+				Load(PlayersMap[Player])
+				local Position = Allocate(Size)
+				buffer.copy(SendBuffer, Position, Buffer, 0, Size)
+				table.move(Instances, 1, #Instances, #SendInstances + 1, SendInstances)
+				PlayersMap[Player] = Save()
+			end
+		end,
+		FireList = function(List: {Player}, Value: { State: string, Round: number, Duration: number }): ()
+			Load()
+			SerdesFunctions.WriteEVENT_MatchUpdated(Value)
+			local Buffer, Size, Instances = SendBuffer, SendCursor, SendInstances
+			for _, Player in List do
+				Load(PlayersMap[Player])
+				local Position = Allocate(Size)
+				buffer.copy(SendBuffer, Position, Buffer, 0, Size)
+				table.move(Instances, 1, #Instances, #SendInstances + 1, SendInstances)
+				PlayersMap[Player] = Save()
+			end
+		end,
+		FireExcept = function(Except: Player, Value: { State: string, Round: number, Duration: number }): ()
+			Load()
+			SerdesFunctions.WriteEVENT_MatchUpdated(Value)
 			local Buffer, Size, Instances = SendBuffer, SendCursor, SendInstances
 			for _, Player in Players:GetPlayers() do
 				if Player == Except then

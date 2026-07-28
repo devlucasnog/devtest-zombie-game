@@ -4,7 +4,7 @@ local ServerScriptService = game:GetService("ServerScriptService")
 local Workspace = game:GetService("Workspace")
 
 local Janitor = require(ReplicatedStorage.Packages.Janitor)
-local ProfileService = require(ServerScriptService.Server.Core.ProfileService.ProfileService)
+local ProfileService = require(ServerScriptService.Server.Core.Profile.ProfileService)
 local WeaponConfig = require(ReplicatedStorage.Shared.Config.WeaponConfig)
 local Types = require(ReplicatedStorage.Shared.Types)
 local Utils = require(ReplicatedStorage.Shared.Utils)

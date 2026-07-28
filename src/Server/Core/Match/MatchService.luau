@@ -7,6 +7,7 @@ local Config = require(ReplicatedStorage.Shared.Config)
 local Enums = require(ReplicatedStorage.Shared.Enums)
 local Types = require(ReplicatedStorage.Shared.Types)
 local Signals = require(ServerScriptService.Server.Signals)
+local Network = require(ServerScriptService.Server.Network)
 
 local MatchConfig = Config.MatchConfig
 local MatchState = Enums.MatchState
@@ -14,6 +15,8 @@ local MatchState = Enums.MatchState
 local matchState: string = MatchState.Waiting
 local currentRound = 0
 local zombiesRemaining = 0
+local phaseStartedAt = 0
+local phaseDuration = 0
 
 local playerScores: { [Player]: number } = {}
 local playerAlive: { [Player]: boolean } = {}
@@ -49,6 +52,25 @@ function Private.OnProfileLoaded(player: Player)
 	end
 
 	Private.TryStartMatch()
+	Private.SyncPlayer(player)
+end
+
+function Private.BroadcastMatchState()
+	Network.MatchUpdated.FireAll({
+		State = matchState,
+		Round = currentRound,
+		Duration = math.floor(phaseDuration),
+	})
+end
+
+function Private.SyncPlayer(player: Player)
+	local remaining = math.max(phaseDuration - (os.clock() - phaseStartedAt), 0)
+
+	Network.MatchUpdated.Fire(player, {
+		State = matchState,
+		Round = currentRound,
+		Duration = math.floor(remaining),
+	})
 end
 
 function Private.OnPlayerRemoving(player: Player)
@@ -108,7 +130,10 @@ end
 
 function Private.StartIntermission(nextRound: number)
 	matchState = MatchState.Intermission
+	phaseStartedAt = os.clock()
+	phaseDuration = MatchConfig.IntermissionDuration
 	print(`[Match] Intermission before round {nextRound} ({MatchConfig.IntermissionDuration}s)`)
+	Private.BroadcastMatchState()
 
 	matchJanitor:Add(
 		task.delay(MatchConfig.IntermissionDuration, function()
@@ -126,7 +151,10 @@ function Private.StartRound(roundNumber: number)
 	local roundDuration = MatchConfig.BaseRoundDuration + zombiesRemaining * MatchConfig.RoundDurationPerZombie
 
 	matchState = MatchState.RoundActive
+	phaseStartedAt = os.clock()
+	phaseDuration = roundDuration
 	print(`[Match] Round {roundNumber} started: {zombiesRemaining} zombies, {roundDuration}s duration`)
+	Private.BroadcastMatchState()
 	Signals.MatchSignals.RoundStarted:Fire(roundNumber, zombiesRemaining, roundDuration)
 end
 
@@ -146,6 +174,8 @@ end
 
 function Private.EndGame()
 	matchState = MatchState.GameEnded
+	phaseStartedAt = os.clock()
+	phaseDuration = MatchConfig.GameEndDisplayDuration
 	matchJanitor:Remove("IntermissionTimer")
 	print(`[Match] Game over!`)
 
@@ -156,6 +186,7 @@ function Private.EndGame()
 
 	Signals.MatchSignals.GameEnded:Fire(leaderboard)
 	Signals.MatchSignals.GameReset:Fire()
+	Private.BroadcastMatchState()
 
 	playerScores = {}
 	for player in playerAlive do
