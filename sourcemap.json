@@ -2255,6 +2255,13 @@
                   ]
                 }
               ]
+            },
+            {
+              "name": "Network",
+              "className": "ModuleScript",
+              "filePaths": [
+                "src/Server\\Network\\init.luau"
+              ]
             }
           ]
         }
@@ -2335,6 +2342,13 @@
                         "src/Client\\Utils\\UIScaler.client.luau"
                       ]
                     }
+                  ]
+                },
+                {
+                  "name": "Network",
+                  "className": "ModuleScript",
+                  "filePaths": [
+                    "src/Client\\Network\\init.luau"
                   ]
                 }
               ]

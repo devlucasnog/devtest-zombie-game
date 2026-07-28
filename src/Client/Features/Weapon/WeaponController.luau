@@ -4,6 +4,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Janitor = require(ReplicatedStorage.Packages.Janitor)
 local SmoothShiftLock = require(ReplicatedStorage.Packages.SmoothShiftLock)
+local Network = require(script.Parent.Parent.Parent.Network)
 
 local WEAPON_TAG = "Weapon"
 local SHIFT_LOCK_TOGGLE_ACTION = "ShiftLockSwitchAction"
@@ -70,7 +71,7 @@ function Private.OnFireAction(_actionName: string, inputState: Enum.UserInputSta
 		return Enum.ContextActionResult.Pass
 	end
 
-	print("tiro!")
+	Network.FireWeapon.Fire()
 
 	return Enum.ContextActionResult.Sink
 end

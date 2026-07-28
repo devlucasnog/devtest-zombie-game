@@ -1,0 +1,8 @@
+option ServerOutput = "src/Server/Network/init.luau"
+option ClientOutput = "src/Client/Network/init.luau"
+
+event FireWeapon {
+	From: Client,
+	Type: Reliable,
+	Call: SingleSync,
+}
