@@ -6,22 +6,24 @@ local Workspace = game:GetService("Workspace")
 local Charm = require(ReplicatedStorage.Packages.Charm)
 local Janitor = require(ReplicatedStorage.Packages.Janitor)
 local SmoothShiftLock = require(ReplicatedStorage.Packages.SmoothShiftLock)
+local Config = require(ReplicatedStorage.Shared.Config)
 local Store = require(ReplicatedStorage.Shared.Store)
 local Utils = require(ReplicatedStorage.Shared.Utils)
 local Network = require(script.Parent.Parent.Parent.Network)
 
+local WeaponConfig = Config.WeaponConfig
 local WeaponUtils = Utils.WeaponUtils
 local VFXUtils = Utils.VFXUtils
 
 local WEAPON_TAG = "Weapon"
 local SHIFT_LOCK_TOGGLE_ACTION = "ShiftLockSwitchAction"
 local FIRE_WEAPON_ACTION = "FireWeapon"
-local LOCAL_TRACER_RANGE = 500
 
 local camera = Workspace.CurrentCamera
 local player = Players.LocalPlayer
 local janitor = Janitor.new()
 local equippedWeapon: Tool? = nil
+local lastFireTime = 0
 
 local Private = {}
 local Shared = {}
@@ -85,6 +87,13 @@ function Private.OnFireAction(_actionName: string, inputState: Enum.UserInputSta
 		return Enum.ContextActionResult.Pass
 	end
 
+	local weaponConfig = WeaponConfig[equippedWeapon.Name]
+	if os.clock() - lastFireTime < weaponConfig.FireRate then
+		return Enum.ContextActionResult.Pass
+	end
+
+	lastFireTime = os.clock()
+
 	local direction = camera.CFrame.LookVector
 	Network.FireWeapon.Fire({ Direction = direction })
 
@@ -93,19 +102,19 @@ function Private.OnFireAction(_actionName: string, inputState: Enum.UserInputSta
 
 	if muzzle then
 		local origin = muzzle.WorldPosition
-		VFXUtils.PlayTracer(origin, Private.PredictEndPoint(origin, direction))
+		VFXUtils.PlayTracer(origin, Private.PredictEndPoint(origin, direction, weaponConfig.Range))
 	end
 
 	return Enum.ContextActionResult.Sink
 end
 
-function Private.PredictEndPoint(origin: Vector3, direction: Vector3): Vector3
+function Private.PredictEndPoint(origin: Vector3, direction: Vector3, range: number): Vector3
 	local raycastParams = RaycastParams.new()
 	raycastParams.FilterType = Enum.RaycastFilterType.Exclude
 	raycastParams.FilterDescendantsInstances = { player.Character }
 
-	local result = Workspace:Raycast(origin, direction * LOCAL_TRACER_RANGE, raycastParams)
-	return result and result.Position or origin + direction * LOCAL_TRACER_RANGE
+	local result = Workspace:Raycast(origin, direction * range, raycastParams)
+	return result and result.Position or origin + direction * range
 end
 
 return Shared

@@ -6,7 +6,6 @@ export type WeaponConfigType = {
 	ReloadCooldown: number,
 	HeadMultiplier: number,
 	Range: number,
-	ToolReference: Tool,
 }
 
 return {}

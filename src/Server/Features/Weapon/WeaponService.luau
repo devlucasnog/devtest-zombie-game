@@ -1,6 +1,7 @@
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
+local ServerStorage = game:GetService("ServerStorage")
 local Workspace = game:GetService("Workspace")
 
 local Janitor = require(ReplicatedStorage.Packages.Janitor)
@@ -14,6 +15,7 @@ local Network = require(ServerScriptService.Server.Network)
 local DEFAULT_WEAPON = "Pistol"
 
 local WeaponUtils = Utils.WeaponUtils
+local WeaponsFolder = ServerStorage.Weapons
 
 local playerJanitors: { [Player]: Types.JanitorType } = {}
 local playerAmmo: { [Player]: number } = {}
@@ -48,13 +50,13 @@ function Private.OnProfileLoaded(player: Player)
 
 	janitor:Add(
 		player.CharacterAdded:Connect(function()
-			Private.GiveWeapon(player, weaponConfig)
+			Private.GiveWeapon(player, weaponEquipped, weaponConfig)
 		end),
 		"Disconnect"
 	)
 
 	if player.Character then
-		Private.GiveWeapon(player, weaponConfig)
+		Private.GiveWeapon(player, weaponEquipped, weaponConfig)
 	end
 end
 
@@ -200,7 +202,7 @@ function Private.ResolveHitTarget(result: RaycastResult): (Model?, Humanoid?)
 	return hitCharacter, humanoid
 end
 
-function Private.GiveWeapon(player: Player, weaponConfig: Types.WeaponConfigType)
+function Private.GiveWeapon(player: Player, weaponName: string, weaponConfig: Types.WeaponConfigType)
 	local character = player.Character
 	if not character then
 		return
@@ -211,7 +213,7 @@ function Private.GiveWeapon(player: Player, weaponConfig: Types.WeaponConfigType
 		janitor:Remove("Reload")
 	end
 
-	local weapon = weaponConfig.ToolReference:Clone()
+	local weapon = WeaponsFolder[weaponName]:Clone()
 	weapon.Parent = character
 
 	playerAmmo[player] = weaponConfig.MaxAmmo
