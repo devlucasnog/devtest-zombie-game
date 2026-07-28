@@ -5,4 +5,7 @@ event FireWeapon {
 	From: Client,
 	Type: Reliable,
 	Call: SingleSync,
+	Data: struct {
+		Direction: vector,
+	}
 }

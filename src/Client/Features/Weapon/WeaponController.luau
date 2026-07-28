@@ -1,6 +1,7 @@
 local ContextActionService = game:GetService("ContextActionService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Workspace = game:GetService("Workspace")
 
 local Janitor = require(ReplicatedStorage.Packages.Janitor)
 local SmoothShiftLock = require(ReplicatedStorage.Packages.SmoothShiftLock)
@@ -10,6 +11,7 @@ local WEAPON_TAG = "Weapon"
 local SHIFT_LOCK_TOGGLE_ACTION = "ShiftLockSwitchAction"
 local FIRE_WEAPON_ACTION = "FireWeapon"
 
+local camera = Workspace.CurrentCamera
 local player = Players.LocalPlayer
 local janitor = Janitor.new()
 local equippedWeapon: Tool? = nil
@@ -71,7 +73,7 @@ function Private.OnFireAction(_actionName: string, inputState: Enum.UserInputSta
 		return Enum.ContextActionResult.Pass
 	end
 
-	Network.FireWeapon.Fire()
+	Network.FireWeapon.Fire({ Direction = camera.CFrame.LookVector })
 
 	return Enum.ContextActionResult.Sink
 end

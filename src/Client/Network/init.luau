@@ -160,10 +160,14 @@ local Queue: any = {
 
 local SerdesEvent = "?"
 local SerdesThread: thread?
-function SerdesFunctions.WriteEVENT_FireWeapon(Value: nil): ()
-	-- Allocate BLOCK: 1 bytes
-	local BLOCK_START = Allocate(1)
+function SerdesFunctions.WriteEVENT_FireWeapon(Value: { Direction: Vector3 }): ()
+	-- Allocate BLOCK: 13 bytes
+	local BLOCK_START = Allocate(13)
 	buffer.writeu8(SendBuffer, BLOCK_START + 0, 0)
+	local Vector = Value.Direction
+	buffer.writef32(SendBuffer, BLOCK_START + 1, Vector.X)
+	buffer.writef32(SendBuffer, BLOCK_START + 5, Vector.Y)
+	buffer.writef32(SendBuffer, BLOCK_START + 9, Vector.Z)
 end
 
 if not RunService:IsRunning() then
@@ -239,7 +243,7 @@ local Returns = table.freeze({
 	StepReplication = StepReplication,
 
 	FireWeapon = {
-		Fire = function(Value: nil): ()
+		Fire = function(Value: { Direction: Vector3 }): ()
 			SerdesFunctions.WriteEVENT_FireWeapon(Value)
 		end
 	},

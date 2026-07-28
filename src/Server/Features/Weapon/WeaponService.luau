@@ -67,7 +67,7 @@ function Private.OnPlayerRemoving(player: Player)
 	playerJanitors[player] = nil
 end
 
-function Private.OnFireWeaponRequest(player: Player)
+function Private.OnFireWeaponRequest(player: Player, payload: { Direction: Vector3 })
 	local character = player.Character
 	if not character then
 		return
@@ -81,6 +81,10 @@ function Private.OnFireWeaponRequest(player: Player)
 	local handle = weaponTool:FindFirstChild("Handle")
 	local muzzle = handle and handle:FindFirstChild("Muzzle")
 	if not (muzzle and muzzle:IsA("Attachment")) then
+		return
+	end
+
+	if payload.Direction.Magnitude == 0 then
 		return
 	end
 
@@ -100,7 +104,7 @@ function Private.OnFireWeaponRequest(player: Player)
 	raycastParams.FilterDescendantsInstances = { character }
 
 	local origin = muzzle.WorldPosition
-	local direction = muzzle.WorldCFrame.LookVector * weaponConfig.Range
+	local direction = payload.Direction.Unit * weaponConfig.Range
 
 	local result = Workspace:Raycast(origin, direction, raycastParams)
 	Private.DrawDebugRay(origin, result and result.Position or (origin + direction))

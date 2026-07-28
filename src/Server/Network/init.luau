@@ -162,8 +162,15 @@ local Queue: any = {
 local SerdesEvent = "?"
 local SerdesThread: thread?
 Queue.Reliable[0] = table.create(256)
-function SerdesFunctions.ReadEVENT_FireWeapon(): (nil)
-	return nil
+function SerdesFunctions.ReadEVENT_FireWeapon(): ({ Direction: Vector3 })
+	-- Read BLOCK: 12 bytes
+	local BLOCK_START = Read(12)
+	local Value = {} :: any
+	local X = buffer.readf32(RecieveBuffer, BLOCK_START + 0)
+	local Y = buffer.readf32(RecieveBuffer, BLOCK_START + 4)
+	local Z = buffer.readf32(RecieveBuffer, BLOCK_START + 8)
+	Value.Direction = Vector3.new(X, Y, Z)
+	return Value
 end
 
 if not RunService:IsRunning() then
@@ -235,7 +242,7 @@ Reliable.OnServerEvent:Connect(function(Player: Player, Buffer: buffer, Instance
 		local BLOCK_START = Read(1)
 		local Index = buffer.readu8(RecieveBuffer, BLOCK_START + 0)
 		if Index == 0 then
-			local Value: nil = SerdesFunctions.ReadEVENT_FireWeapon()
+			local Value: { Direction: Vector3 } = SerdesFunctions.ReadEVENT_FireWeapon()
 			if Events.Reliable[0] ~= nil then
 				SerdesEvent = "FireWeapon"
 				Events.Reliable[0](Player, Value)
@@ -271,7 +278,7 @@ local Returns = table.freeze({
 	StepReplication = StepReplication,
 
 	FireWeapon = {
-		On = function(Listener: (Player: Player, Value: nil) -> ()): () -> ()
+		On = function(Listener: (Player: Player, Value: { Direction: Vector3 }) -> ()): () -> ()
 			Events.Reliable[0] = Listener
 			for Index, Arguments in Queue.Reliable[0] do
 				Listener(table.unpack(Arguments))
