@@ -20,6 +20,7 @@ RagdollSystem = "leostormer/ragdoll-system@0.6.1"
 ZonePlus = "mattschrubb/zoneplus@3.2.0"
 EzVisualz = "arxkdev/ezvisualz@0.0.6"
 TopbarPlus = "1foreverhd/topbarplus@3.4.0"
+SmoothShiftLock = "itzazie/smoothshiftlock@0.1.0"
 
 [server-dependencies]
 ProfileStore = "aykut92/profilestore@1.0.21"
