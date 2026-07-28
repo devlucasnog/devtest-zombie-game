@@ -6,6 +6,7 @@ local AmmoType = require(script.AmmoType)
 local LeaderboardEntryType = require(script.LeaderboardEntryType)
 local ZombieConfigType = require(script.ZombieConfigType)
 local ZombieServerComponentType = require(script.ZombieServerComponentType)
+local ZombieClientComponentType = require(script.ZombieClientComponentType)
 
 export type ProfileType = ProfileType.ProfileType
 export type ProfileActionType = ProfileActionType.ProfileActionType
@@ -15,5 +16,6 @@ export type AmmoType = AmmoType.AmmoType
 export type LeaderboardEntryType = LeaderboardEntryType.LeaderboardEntryType
 export type ZombieConfigType = ZombieConfigType.ZombieConfigType
 export type ZombieServerComponentType = ZombieServerComponentType.ZombieServerComponentType
+export type ZombieClientComponentType = ZombieClientComponentType.ZombieClientComponentType
 
 return {}

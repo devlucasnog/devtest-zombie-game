@@ -2200,6 +2200,13 @@
                   ]
                 },
                 {
+                  "name": "ZombieClientComponentType",
+                  "className": "ModuleScript",
+                  "filePaths": [
+                    "src/Shared\\Types\\ZombieClientComponentType.luau"
+                  ]
+                },
+                {
                   "name": "ZombieConfigType",
                   "className": "ModuleScript",
                   "filePaths": [
@@ -2515,6 +2522,19 @@
                       "name": "Zombie",
                       "className": "Folder",
                       "children": [
+                        {
+                          "name": "Components",
+                          "className": "Folder",
+                          "children": [
+                            {
+                              "name": "ZombieClientComponent",
+                              "className": "ModuleScript",
+                              "filePaths": [
+                                "src/Client\\Features\\Zombie\\Components\\ZombieClientComponent.luau"
+                              ]
+                            }
+                          ]
+                        },
                         {
                           "name": "ZombieController",
                           "className": "ModuleScript",
