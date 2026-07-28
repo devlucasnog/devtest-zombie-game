@@ -1,7 +1,7 @@
 local JanitorType = require(script.Parent.JanitorType)
 local ZombieConfigType = require(script.Parent.ZombieConfigType)
 
-export type ZombieComponentType = {
+export type ZombieServerComponentType = {
 	Instance: Model & {
 		Humanoid: Humanoid & {
 			Animator: Animator,
@@ -21,38 +21,38 @@ export type ZombieComponentType = {
 	_lastAttacker: Player?,
 	_animationTracks: { Idle: AnimationTrack, Walk: AnimationTrack, Attack: AnimationTrack },
 
-	Construct: (self: ZombieComponentType) -> (),
-	Start: (self: ZombieComponentType) -> (),
-	Stop: (self: ZombieComponentType) -> (),
-	HeartbeatUpdate: (self: ZombieComponentType, dt: number) -> (),
-	TakeDamage: (self: ZombieComponentType, damage: number, attacker: Player, hitPart: BasePart) -> (),
+	Construct: (self: ZombieServerComponentType) -> (),
+	Start: (self: ZombieServerComponentType) -> (),
+	Stop: (self: ZombieServerComponentType) -> (),
+	HeartbeatUpdate: (self: ZombieServerComponentType, dt: number) -> (),
+	TakeDamage: (self: ZombieServerComponentType, damage: number, attacker: Player, hitPart: BasePart) -> (),
 
-	_OnDied: (self: ZombieComponentType) -> (),
+	_OnDied: (self: ZombieServerComponentType) -> (),
 
 	_FindNearestTarget: (
-		self: ZombieComponentType,
+		self: ZombieServerComponentType,
 		position: Vector3
 	) -> {
 		RootPart: BasePart,
 		Humanoid: Humanoid,
 	}?,
 
-	_SetState: (self: ZombieComponentType, target: {
+	_SetState: (self: ZombieServerComponentType, target: {
 		RootPart: BasePart,
 		Humanoid: Humanoid,
 	}) -> (),
 
-	_TryAttack: (self: ZombieComponentType, target: {
+	_TryAttack: (self: ZombieServerComponentType, target: {
 		RootPart: BasePart,
 		Humanoid: Humanoid,
 	}) -> (),
 
-	_FaceTarget: (self: ZombieComponentType, target: {
+	_FaceTarget: (self: ZombieServerComponentType, target: {
 		RootPart: BasePart,
 		Humanoid: Humanoid,
 	}) -> (),
 
-	_PlayAnimation: (self: ZombieComponentType, name: string) -> (),
+	_PlayAnimation: (self: ZombieServerComponentType, name: string) -> (),
 }
 
 return {}

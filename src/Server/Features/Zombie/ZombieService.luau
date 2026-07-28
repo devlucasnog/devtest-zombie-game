@@ -6,7 +6,7 @@ local Workspace = game:GetService("Workspace")
 local Janitor = require(ReplicatedStorage.Packages.Janitor)
 local Config = require(ReplicatedStorage.Shared.Config)
 local Signals = require(ServerScriptService.Server.Signals)
-local ZombieComponent = require(script.Parent.Components.ZombieComponent)
+local ZombieServerComponent = require(script.Parent.Components.ZombieServerComponent)
 
 local DEFAULT_ZOMBIE_TYPE = "Basic"
 
@@ -29,7 +29,7 @@ function Shared.OnStart()
 end
 
 function Private.OnWeaponHit(hitCharacter: Model, damage: number, attacker: Player, hitPart: BasePart)
-	local zombie = ZombieComponent:FromInstance(hitCharacter)
+	local zombie = ZombieServerComponent:FromInstance(hitCharacter)
 	if not zombie then
 		return
 	end

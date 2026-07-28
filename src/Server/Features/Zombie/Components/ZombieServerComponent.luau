@@ -14,7 +14,7 @@ local TAG = "Zombie"
 local TARGET_REFRESH_INTERVAL = 0.25
 local CORPSE_DESPAWN_DELAY = 3
 
-type ZombieComponentType = Types.ZombieComponentType
+type ZombieServerComponentType = Types.ZombieServerComponentType
 type Target = { RootPart: BasePart, Humanoid: Humanoid }
 
 local ZombieConfig = Config.ZombieConfig
@@ -27,9 +27,9 @@ local STATE_ANIMATIONS = {
 	[ZombieState.Attacking] = "Attack",
 }
 
-local ZombieComponent = Component.new({ Tag = TAG, Ancestors = { workspace } }) :: ZombieComponentType
+local ZombieServerComponent = Component.new({ Tag = TAG, Ancestors = { workspace } }) :: ZombieServerComponentType
 
-function ZombieComponent:Construct()
+function ZombieServerComponent:Construct()
 	self._janitor = Janitor.new()
 	self._config = ZombieConfig[self.Instance.Name]
 	self._state = ZombieState.Idle
@@ -39,7 +39,7 @@ function ZombieComponent:Construct()
 	self._lastAttacker = nil
 end
 
-function ZombieComponent:Start()
+function ZombieServerComponent:Start()
 	self._humanoid = self.Instance.Humanoid
 	self._animator = self.Instance.Humanoid.Animator
 	self._rootPart = self.Instance.HumanoidRootPart
@@ -62,7 +62,7 @@ function ZombieComponent:Start()
 	)
 end
 
-function ZombieComponent:TakeDamage(damage: number, attacker: Player, hitPart: BasePart)
+function ZombieServerComponent:TakeDamage(damage: number, attacker: Player, hitPart: BasePart)
 	if self._humanoid.Health <= 0 then
 		return
 	end
@@ -73,7 +73,7 @@ function ZombieComponent:TakeDamage(damage: number, attacker: Player, hitPart: B
 	Network.ZombieDamaged.FireAll({ Part = hitPart, Damage = damage })
 end
 
-function ZombieComponent:HeartbeatUpdate(dt: number)
+function ZombieServerComponent:HeartbeatUpdate(dt: number)
 	if self._humanoid.Health <= 0 then
 		return
 	end
@@ -103,11 +103,11 @@ function ZombieComponent:HeartbeatUpdate(dt: number)
 	end
 end
 
-function ZombieComponent:Stop()
+function ZombieServerComponent:Stop()
 	self._janitor:Destroy()
 end
 
-function ZombieComponent:_OnDied()
+function ZombieServerComponent:_OnDied()
 	if self._lastAttacker then
 		MatchService.ReportZombieKilled(self._lastAttacker)
 	end
@@ -117,7 +117,7 @@ function ZombieComponent:_OnDied()
 	end)
 end
 
-function ZombieComponent:_FindNearestTarget(position: Vector3): Target?
+function ZombieServerComponent:_FindNearestTarget(position: Vector3): Target?
 	local nearest: Target? = nil
 	local nearestDistance = math.huge
 
@@ -138,7 +138,7 @@ function ZombieComponent:_FindNearestTarget(position: Vector3): Target?
 	return nearest
 end
 
-function ZombieComponent:_SetState(
+function ZombieServerComponent:_SetState(
 	state: string,
 	target: {
 		RootPart: BasePart,
@@ -162,7 +162,7 @@ function ZombieComponent:_SetState(
 	end
 end
 
-function ZombieComponent:_PlayAnimation(name: string)
+function ZombieServerComponent:_PlayAnimation(name: string)
 	for trackName, track in self._animationTracks do
 		if trackName == name then
 			if not track.IsPlaying then
@@ -174,7 +174,7 @@ function ZombieComponent:_PlayAnimation(name: string)
 	end
 end
 
-function ZombieComponent:_FaceTarget(target: Target)
+function ZombieServerComponent:_FaceTarget(target: Target)
 	local rootPosition = self._rootPart.Position
 	local lookAt = Vector3.new(target.RootPart.Position.X, rootPosition.Y, target.RootPart.Position.Z)
 
@@ -183,7 +183,7 @@ function ZombieComponent:_FaceTarget(target: Target)
 	end
 end
 
-function ZombieComponent:_TryAttack(target: Target)
+function ZombieServerComponent:_TryAttack(target: Target)
 	if self._isAttacking then
 		return
 	end
@@ -207,4 +207,4 @@ function ZombieComponent:_TryAttack(target: Target)
 	end)
 end
 
-return ZombieComponent
+return ZombieServerComponent
