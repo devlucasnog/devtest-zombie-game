@@ -27,6 +27,10 @@ end
 
 function Private.UpdateAmmoText()
 	local ammo = Store.Ammo()
+	local reloading = ammo.Max > 0 and ammo.Current == 0
+
+	ammoWrapper.Reloading.Visible = reloading
+	ammoWrapper.Amount.Visible = not reloading
 	ammoWrapper.Amount.Text = `{ammo.Current}/{ammo.Max}`
 end
 

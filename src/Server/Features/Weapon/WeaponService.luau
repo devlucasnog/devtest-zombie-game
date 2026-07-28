@@ -1,4 +1,3 @@
-local Debris = game:GetService("Debris")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
@@ -7,6 +6,7 @@ local Workspace = game:GetService("Workspace")
 local Janitor = require(ReplicatedStorage.Packages.Janitor)
 local ProfileService = require(ServerScriptService.Server.Core.ProfileService.ProfileService)
 local Config = require(ReplicatedStorage.Shared.Config)
+local WeaponConfig = require(ReplicatedStorage.Shared.Config.WeaponConfig)
 local Types = require(ReplicatedStorage.Shared.Types)
 local Utils = require(ReplicatedStorage.Shared.Utils)
 local Signals = require(ServerScriptService.Server.Signals)
@@ -94,70 +94,121 @@ function Private.OnFireWeaponRequest(player: Player, payload: { Direction: Vecto
 		return
 	end
 
+	local weaponEquipped, weaponConfig = Private.GetEquippedWeaponConfig(player)
+	if not weaponConfig or weapon.Name ~= weaponEquipped then
+		return
+	end
+
+	if not Private.TryConsumeShot(player, weaponConfig) then
+		return
+	end
+
+	local origin = muzzle.WorldPosition
+	local result = Private.RaycastWeapon(character, origin, payload.Direction, weaponConfig)
+
+	if not result then
+		return
+	end
+
+	local hitCharacter, hitHumanoid = Private.ResolveHitTarget(result)
+	if not (hitCharacter and hitHumanoid) then
+		return
+	end
+
+	Private.TakeDamage(result.Instance.Name, hitHumanoid, weaponConfig)
+end
+
+function Private.GetEquippedWeaponConfig(player: Player): (string?, Types.WeaponConfigType?)
 	local profile = ProfileService.GetProfile(player)
 	if not profile then
-		return
+		return nil, nil
 	end
 
 	local weaponEquipped = profile.WeaponEquipped or DEFAULT_WEAPON
-	local weaponConfig = WeaponConfig[weaponEquipped]
-	if not weaponConfig then
-		return
-	end
+	return weaponEquipped, WeaponConfig[weaponEquipped]
+end
 
-	if weapon.Name ~= weaponEquipped then
-		return
-	end
-
+function Private.TryConsumeShot(player: Player, weaponConfig: Types.WeaponConfigType): boolean
 	local ammo = playerAmmo[player]
 	if not ammo or ammo <= 0 then
-		return
+		return false
 	end
 
 	local lastFireTime = playerLastFireTime[player]
 	if lastFireTime and os.clock() - lastFireTime < weaponConfig.FireRate then
-		return
+		return false
 	end
 
 	playerLastFireTime[player] = os.clock()
 	playerAmmo[player] = ammo - 1
 	Network.AmmoUpdated.Fire(player, { Current = ammo - 1, Max = weaponConfig.MaxAmmo })
 
+	if ammo - 1 <= 0 then
+		Private.StartReload(player, weaponConfig)
+	end
+
+	return true
+end
+
+function Private.StartReload(player: Player, weaponConfig: Types.WeaponConfigType)
+	local janitor = playerJanitors[player]
+	if not janitor then
+		return
+	end
+
+	janitor:Add(
+		task.delay(weaponConfig.ReloadCooldown, function()
+			playerAmmo[player] = weaponConfig.MaxAmmo
+			Network.AmmoUpdated.Fire(player, { Current = weaponConfig.MaxAmmo, Max = weaponConfig.MaxAmmo })
+		end),
+		true,
+		"Reload"
+	)
+end
+
+function Private.RaycastWeapon(
+	character: Model,
+	origin: Vector3,
+	direction: Vector3,
+	weaponConfig: Types.WeaponConfigType
+): RaycastResult?
 	local raycastParams = RaycastParams.new()
 	raycastParams.FilterType = Enum.RaycastFilterType.Exclude
 	raycastParams.FilterDescendantsInstances = { character }
 
-	local origin = muzzle.WorldPosition
-	local direction = payload.Direction.Unit * weaponConfig.Range
+	local castDirection = direction.Unit * weaponConfig.Range
+	local result = Workspace:Raycast(origin, castDirection, raycastParams)
 
-	local result = Workspace:Raycast(origin, direction, raycastParams)
-	Private.DrawDebugRay(origin, result and result.Position or (origin + direction))
+	return result
+end
 
-	if not result then
-		return
-	end
-
+function Private.ResolveHitTarget(result: RaycastResult): (Model?, Humanoid?)
 	local hitCharacter = result.Instance:FindFirstAncestorOfClass("Model")
 	if not hitCharacter then
-		return
+		return nil, nil
 	end
 
 	if Players:GetPlayerFromCharacter(hitCharacter) then
-		return
+		return nil, nil
 	end
 
 	local humanoid = hitCharacter:FindFirstChildOfClass("Humanoid")
 	if not humanoid or humanoid.Health <= 0 then
-		return
+		return nil, nil
 	end
 
-	print(`{player.Name} hit {result.Instance:GetFullName()}`)
+	return hitCharacter, humanoid
 end
 
 function Private.GiveWeapon(player: Player, weaponConfig: Types.WeaponConfigType)
 	local character = player.Character
 	if not character then
 		return
+	end
+
+	local janitor = playerJanitors[player]
+	if janitor then
+		janitor:Remove("Reload")
 	end
 
 	local weapon = weaponConfig.ToolReference:Clone()
@@ -167,20 +218,14 @@ function Private.GiveWeapon(player: Player, weaponConfig: Types.WeaponConfigType
 	Network.AmmoUpdated.Fire(player, { Current = weaponConfig.MaxAmmo, Max = weaponConfig.MaxAmmo })
 end
 
-function Private.DrawDebugRay(origin: Vector3, endPosition: Vector3)
-	local distance = (endPosition - origin).Magnitude
+function Private.TakeDamage(bodyPart: string, humanoid: Humanoid, weaponConfig: Types.WeaponConfigType)
+	local damage = weaponConfig.Damage
 
-	local ray = Instance.new("Part")
-	ray.Anchored = true
-	ray.CanCollide = false
-	ray.CanQuery = false
-	ray.Material = Enum.Material.Neon
-	ray.Color = Color3.new(1, 0, 0)
-	ray.Size = Vector3.new(0.1, 0.1, distance)
-	ray.CFrame = CFrame.lookAt(origin, endPosition) * CFrame.new(0, 0, -distance / 2)
-	ray.Parent = Workspace
+	if bodyPart == "Head" then
+		damage += damage * weaponConfig.HeadMultiplier
+	end
 
-	Debris:AddItem(ray, DEBUG_RAY_LIFETIME)
+	humanoid:TakeDamage(damage)
 end
 
 return Shared
