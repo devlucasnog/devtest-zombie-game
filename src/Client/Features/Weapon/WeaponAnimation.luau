@@ -32,4 +32,9 @@ function Shared.Play(name: string)
 	end
 end
 
+function Shared.Stop()
+	janitor:Cleanup()
+	animationTracks = {}
+end
+
 return Shared

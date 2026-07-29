@@ -94,6 +94,7 @@ end
 
 function Private.OnDied()
 	Private.SetEquippedWeapon(nil)
+	WeaponAnimation.Stop()
 end
 
 function Private.OnAmmoChanged(ammo: { Current: number, Max: number }, previousAmmo: { Current: number, Max: number })
