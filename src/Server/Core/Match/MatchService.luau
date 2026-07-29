@@ -158,10 +158,19 @@ function Private.BuildLeaderboard(): { Types.LeaderboardEntryType }
 	local leaderboard = {}
 
 	for player, points in playerScores do
-		local thumbnail =
-			Players:GetUserThumbnailAsync(player.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size100x100)
+		local success, thumbnail = pcall(
+			Players.GetUserThumbnailAsync,
+			Players,
+			player.UserId,
+			Enum.ThumbnailType.HeadShot,
+			Enum.ThumbnailSize.Size100x100
+		)
 
-		table.insert(leaderboard, { Thumbnail = thumbnail, DisplayName = player.DisplayName, Points = points })
+		table.insert(leaderboard, {
+			Thumbnail = if success then thumbnail else "",
+			DisplayName = player.DisplayName,
+			Points = points,
+		})
 	end
 
 	table.sort(leaderboard, function(a, b)

@@ -36,23 +36,27 @@ function Private.OnLeaderboardUpdated(data: { Entries: { { Thumbnail: string, Di
 			PopupUtils.HidePopup(leaderboardGui)
 		end)
 
-		closeButton.Activated:Once(function()
-			janitor:Cleanup()
-		end)
+		janitor:Add(
+			closeButton.Activated:Once(function()
+				janitor:Cleanup()
+			end),
+			"Disconnect"
+		)
 	end)
 end
 
 function Private.Populate(entries: { { Thumbnail: string, DisplayName: string, Points: number } })
 	for i, entry in entries do
 		local card = LeaderboardCard:Clone()
-		card.Name = i
+		card.Name = tostring(i)
 		card.LayoutOrder = i
 
 		card.Thumbnail.Image = entry.Thumbnail
-		card.DisplayName.Text = entry.DisplayName
+		card.DisplayName.Text = `{i}. {entry.DisplayName}`
 		card.Points.Text = NumberUtils.FormatWithSuffix(entry.Points)
 
 		card.Parent = scrollingFrame
+		janitor:Add(card, "Destroy")
 	end
 end
 
