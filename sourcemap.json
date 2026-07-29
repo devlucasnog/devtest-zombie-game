@@ -2591,6 +2591,19 @@
                           ]
                         }
                       ]
+                    },
+                    {
+                      "name": "Player",
+                      "className": "Folder",
+                      "children": [
+                        {
+                          "name": "PlayerController",
+                          "className": "ModuleScript",
+                          "filePaths": [
+                            "src/Client\\Features\\Player\\PlayerController.luau"
+                          ]
+                        }
+                      ]
                     }
                   ]
                 },
@@ -2627,6 +2640,13 @@
                       "className": "ModuleScript",
                       "filePaths": [
                         "src/Client\\Utils\\BackdropUtils.luau"
+                      ]
+                    },
+                    {
+                      "name": "CameraShakeUtils",
+                      "className": "ModuleScript",
+                      "filePaths": [
+                        "src/Client\\Utils\\CameraShakeUtils.luau"
                       ]
                     }
                   ]

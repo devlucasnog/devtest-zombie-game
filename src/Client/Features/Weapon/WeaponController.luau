@@ -11,12 +11,14 @@ local Enums = require(ReplicatedStorage.Shared.Enums)
 local Store = require(ReplicatedStorage.Shared.Store)
 local Utils = require(ReplicatedStorage.Shared.Utils)
 local Network = require(script.Parent.Parent.Parent.Network)
+local ClientUtils = require(script.Parent.Parent.Parent.Utils)
 
 local WeaponConfig = Config.WeaponConfig
 local MatchState = Enums.MatchState
 local WeaponUtils = Utils.WeaponUtils
 local VFXUtils = Utils.VFXUtils
 local SFXUtils = Utils.SFXUtils
+local CameraShakeUtils = ClientUtils.CameraShakeUtils
 
 local WEAPON_TAG = "Weapon"
 local SHIFT_LOCK_TOGGLE_ACTION = "ShiftLockSwitchAction"
@@ -82,18 +84,6 @@ function Private.OnDied()
 	Private.SetEquippedWeapon(nil)
 end
 
-function Private.SetEquippedWeapon(weapon: Tool?)
-	equippedWeapon = weapon
-	Store.Weapon(weapon ~= nil)
-	Private.UpdateShiftLock()
-end
-
-function Private.UpdateShiftLock()
-	local match = Store.Match()
-	local shouldLock = equippedWeapon ~= nil and match.State == MatchState.RoundActive
-	SmoothShiftLock:ToggleShiftLock(shouldLock)
-end
-
 function Private.OnFireAction(_actionName: string, inputState: Enum.UserInputState)
 	if inputState ~= Enum.UserInputState.Begin or not equippedWeapon then
 		return Enum.ContextActionResult.Pass
@@ -122,9 +112,22 @@ function Private.OnFireAction(_actionName: string, inputState: Enum.UserInputSta
 		local origin = muzzle.WorldPosition
 		VFXUtils.PlayTracer(origin, Private.PredictEndPoint(origin, direction, weaponConfig.Range))
 		SFXUtils.PlayAtPosition("Shoot", muzzle.WorldCFrame)
+		CameraShakeUtils.ShakeOnce(1.6, 3.5, 0.05, 0.5)
 	end
 
 	return Enum.ContextActionResult.Sink
+end
+
+function Private.SetEquippedWeapon(weapon: Tool?)
+	equippedWeapon = weapon
+	Store.Weapon(weapon ~= nil)
+	Private.UpdateShiftLock()
+end
+
+function Private.UpdateShiftLock()
+	local match = Store.Match()
+	local shouldLock = equippedWeapon ~= nil and match.State == MatchState.RoundActive
+	SmoothShiftLock:ToggleShiftLock(shouldLock)
 end
 
 function Private.PredictEndPoint(origin: Vector3, direction: Vector3, range: number): Vector3
