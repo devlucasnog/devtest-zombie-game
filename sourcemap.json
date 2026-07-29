@@ -2373,6 +2373,22 @@
                       "filePaths": [
                         "src/Server\\Core\\Profile\\ProfileTemplate.luau"
                       ]
+                    },
+                    {
+                      "name": "Actions",
+                      "className": "ModuleScript",
+                      "filePaths": [
+                        "src/Server\\Core\\Profile\\Actions\\init.luau"
+                      ],
+                      "children": [
+                        {
+                          "name": "AddCash",
+                          "className": "ModuleScript",
+                          "filePaths": [
+                            "src/Server\\Core\\Profile\\Actions\\AddCash.luau"
+                          ]
+                        }
+                      ]
                     }
                   ]
                 }
@@ -2601,6 +2617,19 @@
                           "className": "ModuleScript",
                           "filePaths": [
                             "src/Client\\Features\\Player\\PlayerController.luau"
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "Currency",
+                      "className": "Folder",
+                      "children": [
+                        {
+                          "name": "CurrencyController",
+                          "className": "ModuleScript",
+                          "filePaths": [
+                            "src/Client\\Features\\Currency\\CurrencyController.luau"
                           ]
                         }
                       ]

@@ -5,6 +5,7 @@ return {
 	RoundDurationPerZombie = 5,
 	IntermissionDuration = 5,
 	PointsPerKill = 10,
+	CashPerKill = 5,
 	GameEndDisplayDuration = 15,
 	ZombieSpawnInterval = 2,
 }

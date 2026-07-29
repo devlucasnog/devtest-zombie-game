@@ -9,6 +9,7 @@ local ProfileStore = require(ServerScriptService.Packages.ProfileStore)
 local Signals = require(ServerScriptService.Server.Signals)
 local Replica = require(ReplicatedStorage.Packages.Replica)
 local Types = require(ReplicatedStorage.Shared.Types)
+local ProfileActionHandler = require(script.Parent.Actions)
 
 local TOKEN = Replica.Token("Profile")
 local DATASTORE_SUFFIX = RunService:IsStudio() and "Dev" or "Prod"
@@ -16,6 +17,7 @@ local DATASTORE_NAME = `PlayerData_{DATASTORE_SUFFIX}`
 
 local DataStore = ProfileStore.New(DATASTORE_NAME, ProfileTemplate)
 
+local actionHandler = ProfileActionHandler.new()
 local playerData = {}
 
 local Private = {}
@@ -95,6 +97,19 @@ function Private.OnPlayerRemoving(player: Player)
 	end
 
 	data.Session:EndSession()
+end
+
+function Shared.UpdateProfile(player: Player, action: Types.ProfileActionType)
+	local data = playerData[player]
+	if not data then
+		warn(`[ProfileService] No profile data found for player {player.Name}`)
+		return false
+	end
+
+	local success, result = actionHandler:Run(data.Replica, action)
+	Signals.ProfileSignals.Updated:Fire(player, action.Name, success)
+
+	return success, result
 end
 
 function Shared.GetProfile(player: Player): Types.ProfileType?

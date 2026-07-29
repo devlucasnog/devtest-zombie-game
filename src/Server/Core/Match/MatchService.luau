@@ -8,6 +8,7 @@ local Enums = require(ReplicatedStorage.Shared.Enums)
 local Types = require(ReplicatedStorage.Shared.Types)
 local Signals = require(ServerScriptService.Server.Signals)
 local Network = require(ServerScriptService.Server.Network)
+local ProfileService = require(ServerScriptService.Server.Core.Profile.ProfileService)
 
 local MatchConfig = Config.MatchConfig
 local MatchState = Enums.MatchState
@@ -225,6 +226,9 @@ function Shared.ReportZombieKilled(player: Player)
 	end
 
 	playerScores[player] = (playerScores[player] or 0) + MatchConfig.PointsPerKill
+
+	ProfileService.UpdateProfile(player, { Name = "AddCash", Amount = MatchConfig.CashPerKill })
+
 	zombiesRemaining -= 1
 
 	if zombiesRemaining <= 0 then
