@@ -26,8 +26,7 @@ local SFXUtils = Utils.SFXUtils
 
 local camera = Workspace.CurrentCamera
 local player = Players.LocalPlayer
-local hudGui = player.PlayerGui:WaitForChild("HUDGui")
-local mobileAim = hudGui.MobileAim
+local crosshairGui = player.PlayerGui:WaitForChild("CrosshairGui")
 local janitor = Janitor.new()
 local matchJanitor = Janitor.new()
 local equippedWeapon: Tool? = nil
@@ -37,13 +36,7 @@ local Private = {}
 local Shared = {}
 
 function Shared.OnStart()
-	ContextActionService:UnbindAction(SHIFT_LOCK_TOGGLE_ACTION)
-	ContextActionService:BindAction(
-		FIRE_WEAPON_ACTION,
-		Private.OnFireAction,
-		true,
-		Enum.UserInputType.MouseButton1
-	)
+	Private.SetupActions()
 
 	player.CharacterAdded:Connect(Private.OnCharacterAdded)
 
@@ -53,6 +46,21 @@ function Shared.OnStart()
 
 	matchJanitor:Add(Charm.effect(Private.UpdateShiftLock), true)
 	matchJanitor:Add(Charm.subscribe(Store.Ammo, Private.OnAmmoChanged), true)
+end
+
+function Private.SetupActions()
+	ContextActionService:UnbindAction(SHIFT_LOCK_TOGGLE_ACTION)
+
+	ContextActionService:BindAction(FIRE_WEAPON_ACTION, Private.OnFireAction, true, Enum.UserInputType.MouseButton1)
+
+	if UserInputService.TouchEnabled then
+		ContextActionService:SetPosition(FIRE_WEAPON_ACTION, UDim2.fromScale(0.3, 0.1))
+		ContextActionService:SetImage(FIRE_WEAPON_ACTION, "rbxassetid://90058632283578")
+
+		local button = ContextActionService:GetButton(FIRE_WEAPON_ACTION)
+		button.Size = UDim2.fromOffset(56, 56)
+		button.Image = "rbxassetid://130034420988487"
+	end
 end
 
 function Private.OnCharacterAdded(character: Model)
@@ -131,8 +139,9 @@ end
 function Private.UpdateShiftLock()
 	local match = Store.Match()
 	local shouldLock = equippedWeapon ~= nil and match.State == MatchState.RoundActive
+
 	SmoothShiftLock:ToggleShiftLock(shouldLock)
-	mobileAim.Visible = shouldLock and UserInputService.TouchEnabled
+	crosshairGui.Enabled = shouldLock and UserInputService.TouchEnabled
 end
 
 return Shared
