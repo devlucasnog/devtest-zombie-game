@@ -2277,6 +2277,13 @@
                   "filePaths": [
                     "src/Shared\\Utils\\WeaponUtils.luau"
                   ]
+                },
+                {
+                  "name": "SFXUtils",
+                  "className": "ModuleScript",
+                  "filePaths": [
+                    "src/Shared\\Utils\\SFXUtils.luau"
+                  ]
                 }
               ]
             }

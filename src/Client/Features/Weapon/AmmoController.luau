@@ -5,7 +5,10 @@ local Charm = require(ReplicatedStorage.Packages.Charm)
 local Janitor = require(ReplicatedStorage.Packages.Janitor)
 local Store = require(ReplicatedStorage.Shared.Store)
 local Types = require(ReplicatedStorage.Shared.Types)
+local Utils = require(ReplicatedStorage.Shared.Utils)
 local Network = require(script.Parent.Parent.Parent.Network)
+
+local SFXUtils = Utils.SFXUtils
 
 local player = Players.LocalPlayer
 local hudGui = player.PlayerGui:WaitForChild("HUDGui")
@@ -22,6 +25,10 @@ function Shared.OnStart()
 end
 
 function Private.OnAmmoUpdated(payload: Types.AmmoType)
+	if payload.Max > 0 and payload.Current == 0 then
+		SFXUtils.Play("Reload")
+	end
+
 	Store.Ammo(payload)
 end
 

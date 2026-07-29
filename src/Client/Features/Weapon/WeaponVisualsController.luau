@@ -4,6 +4,7 @@ local Utils = require(ReplicatedStorage.Shared.Utils)
 local Network = require(script.Parent.Parent.Parent.Network)
 
 local VFXUtils = Utils.VFXUtils
+local SFXUtils = Utils.SFXUtils
 
 local Private = {}
 local Shared = {}
@@ -17,6 +18,7 @@ function Private.OnWeaponFired(payload: { Muzzle: Attachment?, EndPoint: Vector3
 
 	if payload.Muzzle then
 		VFXUtils.PlayTracer(payload.Muzzle.WorldPosition, payload.EndPoint)
+		SFXUtils.PlayAtPosition("Shoot", payload.Muzzle.WorldCFrame)
 	end
 end
 

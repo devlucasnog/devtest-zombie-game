@@ -16,6 +16,7 @@ local WeaponConfig = Config.WeaponConfig
 local MatchState = Enums.MatchState
 local WeaponUtils = Utils.WeaponUtils
 local VFXUtils = Utils.VFXUtils
+local SFXUtils = Utils.SFXUtils
 
 local WEAPON_TAG = "Weapon"
 local SHIFT_LOCK_TOGGLE_ACTION = "ShiftLockSwitchAction"
@@ -100,6 +101,7 @@ function Private.OnFireAction(_actionName: string, inputState: Enum.UserInputSta
 
 	local ammo = Charm.peek(Store.Ammo)
 	if ammo.Current <= 0 then
+		SFXUtils.Play("DryFire")
 		return Enum.ContextActionResult.Pass
 	end
 
@@ -119,6 +121,7 @@ function Private.OnFireAction(_actionName: string, inputState: Enum.UserInputSta
 	if muzzle then
 		local origin = muzzle.WorldPosition
 		VFXUtils.PlayTracer(origin, Private.PredictEndPoint(origin, direction, weaponConfig.Range))
+		SFXUtils.PlayAtPosition("Shoot", muzzle.WorldCFrame)
 	end
 
 	return Enum.ContextActionResult.Sink

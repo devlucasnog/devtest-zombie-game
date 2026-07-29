@@ -4,6 +4,9 @@ local TweenService = game:GetService("TweenService")
 local Component = require(ReplicatedStorage.Packages.Component)
 local Janitor = require(ReplicatedStorage.Packages.Janitor)
 local Types = require(ReplicatedStorage.Shared.Types)
+local Utils = require(ReplicatedStorage.Shared.Utils)
+
+local SFXUtils = Utils.SFXUtils
 
 local TAG = "Zombie"
 local TWEEN_IN = TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
@@ -25,6 +28,30 @@ function ZombieClientComponent:Start()
 	self._gui = self._janitor:Add(ZombieGui:Clone(), "Destroy")
 	self._gui.Adornee = self.Instance.Head
 	self._gui.Parent = self.Instance.Head
+
+	self:_PlayGrowl()
+
+	self._janitor:Add(
+		self.Instance.Humanoid.Died:Connect(function()
+			self:_OnDied()
+		end),
+		"Disconnect"
+	)
+end
+
+function ZombieClientComponent:_PlayGrowl()
+	local growl = SFXUtils.CreateSound("Growl", self.Instance.HumanoidRootPart)
+	if not growl then
+		return
+	end
+
+	growl.Looped = true
+	self._janitor:Add(growl, "Destroy", "Growl"):Play()
+end
+
+function ZombieClientComponent:_OnDied()
+	self._janitor:Remove("Growl")
+	SFXUtils.PlayAtPosition("Die", self.Instance.HumanoidRootPart.CFrame)
 end
 
 function ZombieClientComponent:TakeDamage(damage: number)
