@@ -152,6 +152,14 @@ function Private.StartRound(roundNumber: number)
 	phaseDuration = roundDuration
 	Private.BroadcastMatchState()
 	Signals.MatchSignals.RoundStarted:Fire(roundNumber, zombiesRemaining, roundDuration)
+
+	matchJanitor:Add(
+		task.delay(roundDuration, function()
+			task.spawn(Private.EndGame)
+		end),
+		true,
+		"RoundTimer"
+	)
 end
 
 function Private.BuildLeaderboard(): { Types.LeaderboardEntryType }
@@ -185,6 +193,7 @@ function Private.EndGame()
 	phaseStartedAt = os.clock()
 	phaseDuration = MatchConfig.GameEndDisplayDuration
 	matchJanitor:Remove("IntermissionTimer")
+	matchJanitor:Remove("RoundTimer")
 
 	local leaderboard = Private.BuildLeaderboard()
 
@@ -219,6 +228,8 @@ function Shared.ReportZombieKilled(player: Player)
 	zombiesRemaining -= 1
 
 	if zombiesRemaining <= 0 then
+		matchJanitor:Remove("RoundTimer")
+
 		local clearedRound = currentRound
 		Signals.MatchSignals.RoundCleared:Fire(clearedRound)
 		Private.StartIntermission(clearedRound + 1)
