@@ -2095,6 +2095,13 @@
                   "filePaths": [
                     "src/Shared\\Config\\ZombieConfig.luau"
                   ]
+                },
+                {
+                  "name": "SFXConfig",
+                  "className": "ModuleScript",
+                  "filePaths": [
+                    "src/Shared\\Config\\SFXConfig.luau"
+                  ]
                 }
               ]
             },
@@ -2232,6 +2239,13 @@
                   "className": "ModuleScript",
                   "filePaths": [
                     "src/Shared\\Types\\ZombieServerComponentType.luau"
+                  ]
+                },
+                {
+                  "name": "SFXConfigType",
+                  "className": "ModuleScript",
+                  "filePaths": [
+                    "src/Shared\\Types\\SFXConfigType.luau"
                   ]
                 }
               ]

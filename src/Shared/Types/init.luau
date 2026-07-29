@@ -7,6 +7,7 @@ local LeaderboardEntryType = require(script.LeaderboardEntryType)
 local ZombieConfigType = require(script.ZombieConfigType)
 local ZombieServerComponentType = require(script.ZombieServerComponentType)
 local ZombieClientComponentType = require(script.ZombieClientComponentType)
+local SFXConfigType = require(script.SFXConfigType)
 
 export type ProfileType = ProfileType.ProfileType
 export type ProfileActionType = ProfileActionType.ProfileActionType
@@ -17,5 +18,6 @@ export type LeaderboardEntryType = LeaderboardEntryType.LeaderboardEntryType
 export type ZombieConfigType = ZombieConfigType.ZombieConfigType
 export type ZombieServerComponentType = ZombieServerComponentType.ZombieServerComponentType
 export type ZombieClientComponentType = ZombieClientComponentType.ZombieClientComponentType
+export type SFXConfigType = SFXConfigType.SFXConfigType
 
 return {}
