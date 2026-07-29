@@ -2,7 +2,6 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 local ServerStorage = game:GetService("ServerStorage")
-local Workspace = game:GetService("Workspace")
 
 local Janitor = require(ReplicatedStorage.Packages.Janitor)
 local ProfileService = require(ServerScriptService.Server.Core.Profile.ProfileService)
@@ -156,7 +155,7 @@ function Private.OnFireWeaponRequest(player: Player, payload: { Direction: Vecto
 	end
 
 	local origin = muzzle.WorldPosition
-	local result = Private.RaycastWeapon(character, origin, payload.Direction, weaponConfig)
+	local result = WeaponUtils.Raycast(character, origin, payload.Direction, weaponConfig)
 	local endPoint = result and result.Position or origin + payload.Direction.Unit * weaponConfig.Range
 
 	Network.WeaponFired.FireExcept(player, { Muzzle = muzzle, EndPoint = endPoint })
@@ -165,7 +164,7 @@ function Private.OnFireWeaponRequest(player: Player, payload: { Direction: Vecto
 		return
 	end
 
-	local hitCharacter, hitHumanoid = Private.ResolveHitTarget(result)
+	local hitCharacter, hitHumanoid = WeaponUtils.ResolveHitTarget(result)
 	if not (hitCharacter and hitHumanoid) then
 		return
 	end
@@ -221,40 +220,6 @@ function Private.StartReload(player: Player, weaponConfig: Types.WeaponConfigTyp
 	)
 end
 
-function Private.RaycastWeapon(
-	character: Model,
-	origin: Vector3,
-	direction: Vector3,
-	weaponConfig: Types.WeaponConfigType
-): RaycastResult?
-	local raycastParams = RaycastParams.new()
-	raycastParams.FilterType = Enum.RaycastFilterType.Exclude
-	raycastParams.FilterDescendantsInstances = { character }
-
-	local castDirection = direction.Unit * weaponConfig.Range
-	local result = Workspace:Raycast(origin, castDirection, raycastParams)
-
-	return result
-end
-
-function Private.ResolveHitTarget(result: RaycastResult): (Model?, Humanoid?)
-	local hitCharacter = result.Instance:FindFirstAncestorOfClass("Model")
-	if not hitCharacter then
-		return nil, nil
-	end
-
-	if Players:GetPlayerFromCharacter(hitCharacter) then
-		return nil, nil
-	end
-
-	local humanoid = hitCharacter:FindFirstChildOfClass("Humanoid")
-	if not humanoid or humanoid.Health <= 0 then
-		return nil, nil
-	end
-
-	return hitCharacter, humanoid
-end
-
 function Private.GiveWeapon(player: Player, weaponName: string, weaponConfig: Types.WeaponConfigType)
 	local character = player.Character
 	if not character then
@@ -274,13 +239,8 @@ function Private.GiveWeapon(player: Player, weaponName: string, weaponConfig: Ty
 end
 
 function Private.DealDamage(hitPart: BasePart, hitCharacter: Model, player: Player, weaponConfig: Types.WeaponConfigType)
-	local damage = weaponConfig.Damage
-
-	if hitPart.Name == "Head" then
-		damage += damage * weaponConfig.HeadMultiplier
-	end
-
-	Signals.CombatSignals.WeaponHit:Fire(hitCharacter, math.floor(damage), player, hitPart)
+	local damage = WeaponUtils.CalculateDamage(hitPart, weaponConfig)
+	Signals.CombatSignals.WeaponHit:Fire(hitCharacter, damage, player, hitPart)
 end
 
 return Shared
