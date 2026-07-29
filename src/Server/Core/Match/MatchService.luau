@@ -175,9 +175,6 @@ function Private.EndGame()
 	matchJanitor:Remove("IntermissionTimer")
 
 	local leaderboard = Private.BuildLeaderboard()
-	for index, entry in leaderboard do
-		print(`{index}. {entry.Name} - {entry.Points} pts`)
-	end
 
 	Signals.MatchSignals.GameEnded:Fire(leaderboard)
 	Signals.MatchSignals.GameReset:Fire()

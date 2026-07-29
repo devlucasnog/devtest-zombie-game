@@ -227,7 +227,7 @@ function Private.DealDamage(hitPart: BasePart, hitCharacter: Model, player: Play
 		damage += damage * weaponConfig.HeadMultiplier
 	end
 
-	Signals.CombatSignals.WeaponHit:Fire(hitCharacter, damage, player, hitPart)
+	Signals.CombatSignals.WeaponHit:Fire(hitCharacter, math.floor(damage), player, hitPart)
 end
 
 return Shared
