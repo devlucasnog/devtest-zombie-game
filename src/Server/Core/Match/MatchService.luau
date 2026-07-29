@@ -28,6 +28,8 @@ local Private = {}
 local Shared = {}
 
 function Shared.OnStart()
+	Players.CharacterAutoLoads = false
+
 	Signals.ProfileSignals.Loaded:Connect(Private.OnProfileLoaded)
 	Players.PlayerRemoving:Connect(Private.OnPlayerRemoving)
 end
@@ -50,6 +52,8 @@ function Private.OnProfileLoaded(player: Player)
 
 	if player.Character then
 		Private.WatchCharacter(player, player.Character, janitor)
+	else
+		player:LoadCharacterAsync()
 	end
 
 	Private.TryStartMatch()
@@ -128,10 +132,23 @@ function Private.TryStartMatch()
 	end
 end
 
+function Private.RespawnDeadPlayers()
+	for player in playerJanitors do
+		local character = player.Character
+		local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+
+		if not humanoid or humanoid.Health <= 0 then
+			player:LoadCharacter()
+		end
+	end
+end
+
 function Private.StartIntermission(nextRound: number)
 	matchState = MatchState.Intermission
 	phaseStartedAt = os.clock()
 	phaseDuration = MatchConfig.IntermissionDuration
+
+	Private.RespawnDeadPlayers()
 	Private.BroadcastMatchState()
 
 	matchJanitor:Add(
