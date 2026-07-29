@@ -38,6 +38,12 @@ local Config: { [string]: Types.SFXConfigType } = {
 		RollOffMinDistance = 40,
 		RollOffMaxDistance = 100,
 	},
+
+	-- UI
+	TimerBeep = {
+		SoundId = 140670422203578,
+		Volume = 0.2,
+	},
 }
 
 return Config
