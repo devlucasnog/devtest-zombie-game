@@ -1,6 +1,7 @@
 local ContextActionService = game:GetService("ContextActionService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local UserInputService = game:GetService("UserInputService")
 local Workspace = game:GetService("Workspace")
 
 local Charm = require(ReplicatedStorage.Packages.Charm)
@@ -25,6 +26,8 @@ local SFXUtils = Utils.SFXUtils
 
 local camera = Workspace.CurrentCamera
 local player = Players.LocalPlayer
+local hudGui = player.PlayerGui:WaitForChild("HUDGui")
+local mobileAim = hudGui.MobileAim
 local janitor = Janitor.new()
 local matchJanitor = Janitor.new()
 local equippedWeapon: Tool? = nil
@@ -38,9 +41,8 @@ function Shared.OnStart()
 	ContextActionService:BindAction(
 		FIRE_WEAPON_ACTION,
 		Private.OnFireAction,
-		false,
-		Enum.UserInputType.MouseButton1,
-		Enum.UserInputType.Touch
+		true,
+		Enum.UserInputType.MouseButton1
 	)
 
 	player.CharacterAdded:Connect(Private.OnCharacterAdded)
@@ -130,6 +132,7 @@ function Private.UpdateShiftLock()
 	local match = Store.Match()
 	local shouldLock = equippedWeapon ~= nil and match.State == MatchState.RoundActive
 	SmoothShiftLock:ToggleShiftLock(shouldLock)
+	mobileAim.Visible = shouldLock and UserInputService.TouchEnabled
 end
 
 return Shared
