@@ -2566,6 +2566,20 @@
                           "filePaths": [
                             "src/Client\\Features\\Weapon\\WeaponVisualsController.luau"
                           ]
+                        },
+                        {
+                          "name": "WeaponAnimation",
+                          "className": "ModuleScript",
+                          "filePaths": [
+                            "src/Client\\Features\\Weapon\\WeaponAnimation.luau"
+                          ]
+                        },
+                        {
+                          "name": "WeaponFeedback",
+                          "className": "ModuleScript",
+                          "filePaths": [
+                            "src/Client\\Features\\Weapon\\WeaponFeedback.luau"
+                          ]
                         }
                       ]
                     },

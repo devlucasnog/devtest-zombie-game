@@ -11,24 +11,20 @@ local Enums = require(ReplicatedStorage.Shared.Enums)
 local Store = require(ReplicatedStorage.Shared.Store)
 local Utils = require(ReplicatedStorage.Shared.Utils)
 local Network = require(script.Parent.Parent.Parent.Network)
-local ClientUtils = require(script.Parent.Parent.Parent.Utils)
+local WeaponAnimation = require(script.Parent.WeaponAnimation)
+local WeaponFeedback = require(script.Parent.WeaponFeedback)
 
 local WEAPON_TAG = "Weapon"
 local SHIFT_LOCK_TOGGLE_ACTION = "ShiftLockSwitchAction"
 local FIRE_WEAPON_ACTION = "FireWeapon"
 
-local WeaponAnimations = ReplicatedStorage.Assets.Animations.Weapon
 local WeaponConfig = Config.WeaponConfig
 local MatchState = Enums.MatchState
 local WeaponUtils = Utils.WeaponUtils
-local VFXUtils = Utils.VFXUtils
 local SFXUtils = Utils.SFXUtils
-local CameraShakeUtils = ClientUtils.CameraShakeUtils
 
 local camera = Workspace.CurrentCamera
 local player = Players.LocalPlayer
-local animator: Animator
-local animationTracks: { [string]: AnimationTrack } = {}
 local janitor = Janitor.new()
 local matchJanitor = Janitor.new()
 local equippedWeapon: Tool? = nil
@@ -67,13 +63,9 @@ function Private.OnCharacterAdded(character: Model)
 	local humanoid = character:FindFirstChildOfClass("Humanoid")
 	if humanoid then
 		janitor:Add(humanoid.Died:Connect(Private.OnDied), "Disconnect")
-
-		animator = humanoid:FindFirstChildOfClass("Animator")
-		animationTracks = {
-			Recoil = janitor:Add(animator:LoadAnimation(WeaponAnimations.Recoil), "Destroy"),
-			Reload = janitor:Add(animator:LoadAnimation(WeaponAnimations.Reload), "Destroy"),
-		}
 	end
+
+	WeaponAnimation.SetCharacter(character)
 end
 
 function Private.OnChildAdded(child: Instance)
@@ -96,14 +88,7 @@ end
 
 function Private.OnAmmoChanged(ammo: { Current: number, Max: number }, previousAmmo: { Current: number, Max: number })
 	if ammo.Current == 0 and previousAmmo.Current > 0 then
-		Private.PlayAnimation("Reload")
-	end
-end
-
-function Private.PlayAnimation(name: string)
-	local track = animationTracks[name]
-	if track then
-		track:Play()
+		WeaponAnimation.Play("Reload")
 	end
 end
 
@@ -127,17 +112,10 @@ function Private.OnFireAction(_actionName: string, inputState: Enum.UserInputSta
 
 	local direction = camera.CFrame.LookVector
 	Network.FireWeapon.Fire({ Direction = direction })
-	Private.PlayAnimation("Recoil")
+	WeaponAnimation.Play("Recoil")
 
 	local muzzle = WeaponUtils.GetMuzzle(equippedWeapon)
-	VFXUtils.PlayMuzzleFlash(muzzle)
-
-	if muzzle then
-		local origin = muzzle.WorldPosition
-		VFXUtils.PlayTracer(origin, Private.PredictEndPoint(origin, direction, weaponConfig.Range))
-		SFXUtils.PlayAtPosition("Shoot", muzzle.WorldCFrame)
-		CameraShakeUtils.ShakeOnce(0.5, 0.5, 0.05, 0.5)
-	end
+	WeaponFeedback.PlayFired(muzzle, direction, weaponConfig.Range)
 
 	return Enum.ContextActionResult.Sink
 end
@@ -152,15 +130,6 @@ function Private.UpdateShiftLock()
 	local match = Store.Match()
 	local shouldLock = equippedWeapon ~= nil and match.State == MatchState.RoundActive
 	SmoothShiftLock:ToggleShiftLock(shouldLock)
-end
-
-function Private.PredictEndPoint(origin: Vector3, direction: Vector3, range: number): Vector3
-	local raycastParams = RaycastParams.new()
-	raycastParams.FilterType = Enum.RaycastFilterType.Exclude
-	raycastParams.FilterDescendantsInstances = { player.Character }
-
-	local result = Workspace:Raycast(origin, direction * range, raycastParams)
-	return result and result.Position or origin + direction * range
 end
 
 return Shared
