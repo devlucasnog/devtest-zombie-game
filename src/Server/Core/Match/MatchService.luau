@@ -76,6 +76,7 @@ end
 
 function Private.OnPlayerRemoving(player: Player)
 	playerAlive[player] = nil
+	playerScores[player] = nil
 
 	local janitor = playerJanitors[player]
 	if janitor then

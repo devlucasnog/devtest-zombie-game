@@ -127,6 +127,11 @@ function Private.OnFireWeaponRequest(player: Player, payload: { Direction: Vecto
 		return
 	end
 
+	local humanoid = character:FindFirstChildOfClass("Humanoid")
+	if not humanoid or humanoid.Health <= 0 then
+		return
+	end
+
 	local weapon = WeaponUtils.GetWeaponFromCharacter(character)
 	if not weapon then
 		return
