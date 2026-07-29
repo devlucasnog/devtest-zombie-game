@@ -12,23 +12,25 @@ local TAG = "Zombie"
 local TWEEN_IN = TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
 local TWEEN_OUT = TweenInfo.new(0.25, Enum.EasingStyle.Back, Enum.EasingDirection.In)
 local DAMAGE_DURATION = 0.5
+local HIGHLIGHT_TWEEN_INFO = TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out, 0, true)
 
 type ZombieClientComponentType = Types.ZombieClientComponentType
 type DamageLabel = Frame & { UIScale: UIScale, Amount: TextLabel }
 
 local ZombieGui = ReplicatedStorage.Assets.GUIs.ZombieGui
+local HitHighlight = ReplicatedStorage.Assets.VFX.HitHighlight
 
 local ZombieClientComponent = Component.new({ Tag = TAG, Ancestors = { workspace } }) :: ZombieClientComponentType
 
 function ZombieClientComponent:Construct()
 	self._janitor = Janitor.new()
+	self._highlightAnimating = false
+	self._highlight = HitHighlight:Clone()
+	self._highlight.Parent = self.Instance
 end
 
 function ZombieClientComponent:Start()
-	self._gui = self._janitor:Add(ZombieGui:Clone(), "Destroy")
-	self._gui.Adornee = self.Instance.Head
-	self._gui.Parent = self.Instance.Head
-
+	self:_AttachGui()
 	self:_PlayGrowl()
 
 	self._janitor:Add(
@@ -37,6 +39,22 @@ function ZombieClientComponent:Start()
 		end),
 		"Disconnect"
 	)
+end
+
+function ZombieClientComponent:TakeDamage(damage: number)
+	local clone = self:_CreateDamageLabel(damage)
+	self:_PlayDamageIn(clone)
+	self:_PlayHitHighlight()
+end
+
+function ZombieClientComponent:Stop()
+	self._janitor:Destroy()
+end
+
+function ZombieClientComponent:_AttachGui()
+	self._gui = self._janitor:Add(ZombieGui:Clone(), "Destroy")
+	self._gui.Adornee = self.Instance.Head
+	self._gui.Parent = self.Instance.Head
 end
 
 function ZombieClientComponent:_PlayGrowl()
@@ -49,18 +67,28 @@ function ZombieClientComponent:_PlayGrowl()
 	self._janitor:Add(growl, "Destroy", "Growl"):Play()
 end
 
+function ZombieClientComponent:_PlayHitHighlight()
+	if self._highlightAnimating then
+		return
+	end
+
+	self._highlightAnimating = true
+
+	local tweenIn = self._janitor:Add(
+		TweenService:Create(self._highlight, HIGHLIGHT_TWEEN_INFO, { FillTransparency = 0.5 }),
+		"Cancel"
+	)
+
+	tweenIn:Play()
+
+	tweenIn.Completed:Once(function()
+		self._highlightAnimating = false
+	end)
+end
+
 function ZombieClientComponent:_OnDied()
 	self._janitor:Remove("Growl")
 	SFXUtils.PlayAtPosition("Die", self.Instance.HumanoidRootPart.CFrame)
-end
-
-function ZombieClientComponent:TakeDamage(damage: number)
-	local clone = self:_CreateDamageLabel(damage)
-	self:_PlayDamageIn(clone)
-end
-
-function ZombieClientComponent:Stop()
-	self._janitor:Destroy()
 end
 
 function ZombieClientComponent:_CreateDamageLabel(damage: number): DamageLabel

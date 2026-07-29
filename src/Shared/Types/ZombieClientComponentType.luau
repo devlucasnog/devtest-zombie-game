@@ -13,11 +13,16 @@ export type ZombieClientComponentType = {
 			Amount: TextLabel,
 		},
 	},
+	_highlight: Highlight,
+	_highlightAnimating: boolean,
 
 	Construct: (self: ZombieClientComponentType) -> (),
 	Start: (self: ZombieClientComponentType) -> (),
 	Stop: (self: ZombieClientComponentType) -> (),
 	TakeDamage: (self: ZombieClientComponentType, damage: number) -> (),
+
+	_AttachGui: (self: ZombieClientComponentType) -> (),
+	_PlayHitHighlight: (self: ZombieClientComponentType) -> (),
 
 	_CreateDamageLabel: (
 		self: ZombieClientComponentType,
