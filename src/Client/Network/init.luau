@@ -164,6 +164,8 @@ Queue.Reliable[1] = table.create(256)
 Queue.Reliable[2] = table.create(256)
 Queue.Unreliable[0] = table.create(256)
 Queue.Unreliable[1] = table.create(256)
+Queue.Reliable[3] = table.create(256)
+export type LeaderboardEntry = { Thumbnail: string, DisplayName: string, Points: number }
 function SerdesFunctions.WriteEVENT_FireWeapon(Value: { Direction: Vector3 }): ()
 	-- Allocate BLOCK: 13 bytes
 	local BLOCK_START = Allocate(13)
@@ -229,6 +231,39 @@ function SerdesFunctions.ReadEVENT_ZombieDamaged(): ({ Part: BasePart?, Damage: 
 	return Value
 end
 
+function SerdesFunctions.ReadEVENT_LeaderboardUpdated(): ({ Entries: { { Thumbnail: string, DisplayName: string, Points: number } } })
+	-- Read BLOCK: 2 bytes
+	local BLOCK_START = Read(2)
+	local Value = {} :: any
+	-- START ARRAY
+	local Length = buffer.readu16(RecieveBuffer, BLOCK_START + 0)
+	if Length < 0 then error(`Expected "Length" to be larger than 0, got {Length} instead.`) end
+	if Length > 65535 then error(`Expected "Length" to be smaller than 65535, got {Length} instead.`) end
+	Value.Entries = table.create(Length)
+		-- Read BLOCK: 6 bytes
+	local ARRAY_START_1 = Read(6 * Length)
+	for Index = 1, Length do
+		local Item_1 = {} :: any
+		-- Read 2
+		local OPERATION_OFFSET_0 = ARRAY_START_1
+		ARRAY_START_1 += 2
+		Length = buffer.readu16(RecieveBuffer, OPERATION_OFFSET_0)
+		Item_1.Thumbnail = buffer.readstring(RecieveBuffer, Read(Length), Length)
+		-- Read 2
+		local OPERATION_OFFSET_1 = ARRAY_START_1
+		ARRAY_START_1 += 2
+		Length = buffer.readu16(RecieveBuffer, OPERATION_OFFSET_1)
+		Item_1.DisplayName = buffer.readstring(RecieveBuffer, Read(Length), Length)
+		-- Read 2
+		local OPERATION_OFFSET_2 = ARRAY_START_1
+		ARRAY_START_1 += 2
+		Item_1.Points = buffer.readu16(RecieveBuffer, OPERATION_OFFSET_2)
+		table.insert(Value.Entries, Item_1)
+	end
+	-- END ARRAY
+	return Value
+end
+
 if not RunService:IsRunning() then
 	local NOOP = function() end
 	local Returns = table.freeze({
@@ -245,6 +280,9 @@ if not RunService:IsRunning() then
 		On = NOOP
 	},
 	ZombieDamaged = {
+		On = NOOP
+	},
+	LeaderboardUpdated = {
 		On = NOOP
 	},
 	})
@@ -310,6 +348,17 @@ Reliable.OnClientEvent:Connect(function(Buffer: buffer, Instances: {Instance})
 					warn("[Blink]: Event queue of \"MatchUpdated\" exceeded 256, did you forget to implement a listener?")
 				end
 				table.insert(Queue.Reliable[2], {Value} :: {any})
+			end
+		elseif Index == 3 then
+			local Value: { Entries: { { Thumbnail: string, DisplayName: string, Points: number } } } = SerdesFunctions.ReadEVENT_LeaderboardUpdated()
+			if Events.Reliable[3] ~= nil then
+				SerdesEvent = "LeaderboardUpdated"
+				Events.Reliable[3](Value)
+			else
+				if #Queue.Reliable[3] > 256 then
+					warn("[Blink]: Event queue of \"LeaderboardUpdated\" exceeded 256, did you forget to implement a listener?")
+				end
+				table.insert(Queue.Reliable[3], {Value} :: {any})
 			end
 		end
 	end
@@ -398,6 +447,20 @@ local Returns = table.freeze({
 			return function (): ()
 				if Events.Unreliable[1] == Listener then
 					Events.Unreliable[1] = nil
+				end
+			end
+		end
+	},
+	LeaderboardUpdated = {
+		On = function(Listener: (Value: { Entries: { { Thumbnail: string, DisplayName: string, Points: number } } }) -> ()): () -> ()
+			Events.Reliable[3] = Listener
+			for Index, Arguments in Queue.Reliable[3] do
+				Listener(table.unpack(Arguments))
+			end
+			Queue.Reliable[3] = {}
+			return function (): ()
+				if Events.Reliable[3] == Listener then
+					Events.Reliable[3] = nil
 				end
 			end
 		end

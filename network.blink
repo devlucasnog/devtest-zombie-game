@@ -50,3 +50,18 @@ event ZombieDamaged {
 		Damage: u16,
 	}
 }
+
+struct LeaderboardEntry {
+	Thumbnail: string,
+	DisplayName: string,
+	Points: u16,
+}
+
+event LeaderboardUpdated {
+	From: Server,
+	Type: Reliable,
+	Call: SingleSync,
+	Data: struct {
+		Entries: LeaderboardEntry[],
+	}
+}

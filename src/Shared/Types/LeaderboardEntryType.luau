@@ -1,5 +1,6 @@
 export type LeaderboardEntryType = {
-	Name: string,
+	Thumbnail: string,
+	DisplayName: string,
 	Points: number,
 }
 

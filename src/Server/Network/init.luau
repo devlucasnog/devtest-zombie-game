@@ -162,6 +162,7 @@ local Queue: any = {
 local SerdesEvent = "?"
 local SerdesThread: thread?
 Queue.Reliable[0] = table.create(256)
+export type LeaderboardEntry = { Thumbnail: string, DisplayName: string, Points: number }
 function SerdesFunctions.ReadEVENT_FireWeapon(): ({ Direction: Vector3 })
 	-- Read BLOCK: 12 bytes
 	local BLOCK_START = Read(12)
@@ -212,6 +213,38 @@ function SerdesFunctions.WriteEVENT_ZombieDamaged(Value: { Part: BasePart?, Dama
 	buffer.writeu16(SendBuffer, BLOCK_START + 1, Value.Damage)
 end
 
+function SerdesFunctions.WriteEVENT_LeaderboardUpdated(Value: { Entries: { { Thumbnail: string, DisplayName: string, Points: number } } }): ()
+	-- Allocate BLOCK: 3 bytes
+	local BLOCK_START = Allocate(3)
+	buffer.writeu8(SendBuffer, BLOCK_START + 0, 3)
+	-- START ARRAY
+	buffer.writeu16(SendBuffer, BLOCK_START + 1, #Value.Entries)
+		-- Allocate BLOCK: 6 bytes
+	local ARRAY_START_1 = Allocate(6 * #Value.Entries)
+	for Index = 1, #Value.Entries do
+		local Item_1 = Value.Entries[Index]
+		local Length = #Item_1.Thumbnail
+		-- Allocate 2
+		local OPERATION_OFFSET_0 = ARRAY_START_1
+		ARRAY_START_1 += 2
+		buffer.writeu16(SendBuffer, OPERATION_OFFSET_0, Length)
+		Allocate(Length)
+		buffer.writestring(SendBuffer, SendOffset, Item_1.Thumbnail, Length)
+		local Length = #Item_1.DisplayName
+		-- Allocate 2
+		local OPERATION_OFFSET_1 = ARRAY_START_1
+		ARRAY_START_1 += 2
+		buffer.writeu16(SendBuffer, OPERATION_OFFSET_1, Length)
+		Allocate(Length)
+		buffer.writestring(SendBuffer, SendOffset, Item_1.DisplayName, Length)
+		-- Allocate 2
+		local OPERATION_OFFSET_2 = ARRAY_START_1
+		ARRAY_START_1 += 2
+		buffer.writeu16(SendBuffer, OPERATION_OFFSET_2, Item_1.Points)
+	end
+	-- END ARRAY
+end
+
 if not RunService:IsRunning() then
 	local NOOP = function() end
 	local Returns = table.freeze({
@@ -237,6 +270,12 @@ if not RunService:IsRunning() then
 		FireExcept = NOOP
 	},
 	ZombieDamaged = {
+		Fire = NOOP,
+		FireAll = NOOP,
+		FireList = NOOP,
+		FireExcept = NOOP
+	},
+	LeaderboardUpdated = {
 		Fire = NOOP,
 		FireAll = NOOP,
 		FireList = NOOP,
@@ -517,6 +556,52 @@ local Returns = table.freeze({
 					continue
 				end
 				Unreliable:FireClient(Player, Buffer, SendInstances)
+			end
+		end,
+	},
+	LeaderboardUpdated = {
+		Fire = function(Player: Player, Value: { Entries: { { Thumbnail: string, DisplayName: string, Points: number } } }): ()
+			Load(PlayersMap[Player])
+			SerdesFunctions.WriteEVENT_LeaderboardUpdated(Value)
+			PlayersMap[Player] = Save()
+		end,
+		FireAll = function(Value: { Entries: { { Thumbnail: string, DisplayName: string, Points: number } } }): ()
+			Load()
+			SerdesFunctions.WriteEVENT_LeaderboardUpdated(Value)
+			local Buffer, Size, Instances = SendBuffer, SendCursor, SendInstances
+			for _, Player in Players:GetPlayers() do
+				Load(PlayersMap[Player])
+				local Position = Allocate(Size)
+				buffer.copy(SendBuffer, Position, Buffer, 0, Size)
+				table.move(Instances, 1, #Instances, #SendInstances + 1, SendInstances)
+				PlayersMap[Player] = Save()
+			end
+		end,
+		FireList = function(List: {Player}, Value: { Entries: { { Thumbnail: string, DisplayName: string, Points: number } } }): ()
+			Load()
+			SerdesFunctions.WriteEVENT_LeaderboardUpdated(Value)
+			local Buffer, Size, Instances = SendBuffer, SendCursor, SendInstances
+			for _, Player in List do
+				Load(PlayersMap[Player])
+				local Position = Allocate(Size)
+				buffer.copy(SendBuffer, Position, Buffer, 0, Size)
+				table.move(Instances, 1, #Instances, #SendInstances + 1, SendInstances)
+				PlayersMap[Player] = Save()
+			end
+		end,
+		FireExcept = function(Except: Player, Value: { Entries: { { Thumbnail: string, DisplayName: string, Points: number } } }): ()
+			Load()
+			SerdesFunctions.WriteEVENT_LeaderboardUpdated(Value)
+			local Buffer, Size, Instances = SendBuffer, SendCursor, SendInstances
+			for _, Player in Players:GetPlayers() do
+				if Player == Except then
+					continue
+				end
+				Load(PlayersMap[Player])
+				local Position = Allocate(Size)
+				buffer.copy(SendBuffer, Position, Buffer, 0, Size)
+				table.move(Instances, 1, #Instances, #SendInstances + 1, SendInstances)
+				PlayersMap[Player] = Save()
 			end
 		end,
 	},

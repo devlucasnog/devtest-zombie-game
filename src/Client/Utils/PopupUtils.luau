@@ -1,13 +1,9 @@
-local CollectionService = game:GetService("CollectionService")
-local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
 
 local Promise = require(ReplicatedStorage.Packages.Promise)
-local Utils = require(ReplicatedStorage.Shared.Utils)
 local BackdropUtils = require(script.Parent.BackdropUtils)
 
-local TAG_HIDE = "HideOnPopup"
 local SHOW_INFO = TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
 local HIDE_INFO = TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.In)
 local EFFECT_IN = TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
@@ -19,7 +15,6 @@ local SATURATION = 0
 
 -- local SFXUtils = Utils.SFXUtils
 
-local guis: { [ScreenGui]: boolean } = {}
 local camera = workspace.CurrentCamera
 local currentPopup: ScreenGui? = nil
 
@@ -49,7 +44,7 @@ local Shared = {}
 
 function Shared.ShowPopup(gui: ScreenGui)
 	local wrapper = gui:FindFirstChild("Wrapper")
-	if not (wrapper and (wrapper:IsA("Frame") or wrapper:IsA("ImageLabel"))) then
+	if not (wrapper and wrapper:IsA("GuiObject")) then
 		return
 	end
 
@@ -57,9 +52,6 @@ function Shared.ShowPopup(gui: ScreenGui)
 		return Promise.resolve()
 	end
 
-	Private.DisableTopBar()
-	Private.DisableHud()
-	Shared.HideAllGuis()
 	BackdropUtils.Show()
 
 	gui.Enabled = true
@@ -91,12 +83,10 @@ function Shared.HidePopup(gui: ScreenGui)
 	end
 
 	local wrapper = gui:FindFirstChild("Wrapper")
-	if not (wrapper and (wrapper:IsA("Frame") or wrapper:IsA("ImageLabel"))) then
+	if not (wrapper and wrapper:IsA("GuiObject")) then
 		return
 	end
 
-	Private.EnableTopBar()
-	Private.EnableHud()
 	Private.PlayEffects(EFFECT_OUT, { BlurSize = 0, Saturation = 0, FieldOfView = DEFAULT_FOV })
 
 	-- SFXUtils.Play("PopupClose")
@@ -111,7 +101,7 @@ function Shared.HidePopup(gui: ScreenGui)
 			colorCorrection.Enabled = false
 			gui.Enabled = false
 			currentPopup = nil
-			Shared.ShowAllGuis()
+
 			BackdropUtils.Hide()
 			resolve()
 		end)
@@ -120,31 +110,11 @@ function Shared.HidePopup(gui: ScreenGui)
 	end)
 end
 
-function Shared.HideAllGuis()
-	for _, gui in CollectionService:GetTagged(TAG_HIDE) do
-		if not gui:IsA("ScreenGui") then
-			continue
-		end
-
-		if gui.Enabled then
-			gui.Enabled = false
-			guis[gui] = true
-		end
-	end
-end
-
-function Shared.ShowAllGuis()
-	for gui in guis do
-		gui.Enabled = true
-	end
-
-	guis = {}
-end
-
 function Private.CancelActiveTweens()
 	for _, tween in activeTweens do
 		tween:Cancel()
 	end
+
 	table.clear(activeTweens)
 end
 

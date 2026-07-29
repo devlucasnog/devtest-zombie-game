@@ -158,7 +158,10 @@ function Private.BuildLeaderboard(): { Types.LeaderboardEntryType }
 	local leaderboard = {}
 
 	for player, points in playerScores do
-		table.insert(leaderboard, { Name = player.Name, Points = points })
+		local thumbnail =
+			Players:GetUserThumbnailAsync(player.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size100x100)
+
+		table.insert(leaderboard, { Thumbnail = thumbnail, DisplayName = player.DisplayName, Points = points })
 	end
 
 	table.sort(leaderboard, function(a, b)
@@ -179,6 +182,7 @@ function Private.EndGame()
 	Signals.MatchSignals.GameEnded:Fire(leaderboard)
 	Signals.MatchSignals.GameReset:Fire()
 	Private.BroadcastMatchState()
+	Network.LeaderboardUpdated.FireAll({ Entries = leaderboard })
 
 	playerScores = {}
 	for player in playerAlive do
