@@ -20,12 +20,15 @@ local WeaponsFolder = ServerStorage.Weapons
 local playerJanitors: { [Player]: Types.JanitorType } = {}
 local playerAmmo: { [Player]: number } = {}
 local playerLastFireTime: { [Player]: number } = {}
+local roundActive = false
 
 local Private = {}
 local Shared = {}
 
 function Shared.OnStart()
 	Signals.ProfileSignals.Loaded:Connect(Private.OnProfileLoaded)
+	Signals.MatchSignals.RoundStarted:Connect(Private.OnRoundStarted)
+	Signals.MatchSignals.GameReset:Connect(Private.OnGameReset)
 	Players.PlayerRemoving:Connect(Private.OnPlayerRemoving)
 	Network.FireWeapon.On(Private.OnFireWeaponRequest)
 end
@@ -38,8 +41,7 @@ function Private.OnProfileLoaded(player: Player)
 	end
 
 	local weaponEquipped = profile.WeaponEquipped or DEFAULT_WEAPON
-	local weaponConfig = WeaponConfig[weaponEquipped]
-	if not weaponConfig then
+	if not WeaponConfig[weaponEquipped] then
 		player:Kick(`Something went wrong, try again!`)
 		warn(`Weapon Config for {weaponEquipped} not found`)
 		return
@@ -50,13 +52,59 @@ function Private.OnProfileLoaded(player: Player)
 
 	janitor:Add(
 		player.CharacterAdded:Connect(function()
-			Private.GiveWeapon(player, weaponEquipped, weaponConfig)
+			Private.OnCharacterAdded(player)
 		end),
 		"Disconnect"
 	)
 
 	if player.Character then
-		Private.GiveWeapon(player, weaponEquipped, weaponConfig)
+		Private.OnCharacterAdded(player)
+	end
+end
+
+function Private.OnCharacterAdded(player: Player)
+	if not roundActive then
+		return
+	end
+
+	local weaponEquipped, weaponConfig = Private.GetEquippedWeaponConfig(player)
+	if not weaponConfig then
+		return
+	end
+
+	Private.GiveWeapon(player, weaponEquipped, weaponConfig)
+end
+
+function Private.OnRoundStarted()
+	roundActive = true
+
+	for _, player in Players:GetPlayers() do
+		if player.Character then
+			Private.OnCharacterAdded(player)
+		end
+	end
+end
+
+function Private.OnGameReset()
+	roundActive = false
+
+	for _, player in Players:GetPlayers() do
+		Private.RemoveWeapon(player)
+	end
+end
+
+function Private.RemoveWeapon(player: Player)
+	local character = player.Character
+	local weapon = character and WeaponUtils.GetWeaponFromCharacter(character)
+	if weapon then
+		weapon:Destroy()
+	end
+
+	playerAmmo[player] = nil
+
+	local janitor = playerJanitors[player]
+	if janitor then
+		janitor:Remove("Reload")
 	end
 end
 

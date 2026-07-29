@@ -7,11 +7,13 @@ local Charm = require(ReplicatedStorage.Packages.Charm)
 local Janitor = require(ReplicatedStorage.Packages.Janitor)
 local SmoothShiftLock = require(ReplicatedStorage.Packages.SmoothShiftLock)
 local Config = require(ReplicatedStorage.Shared.Config)
+local Enums = require(ReplicatedStorage.Shared.Enums)
 local Store = require(ReplicatedStorage.Shared.Store)
 local Utils = require(ReplicatedStorage.Shared.Utils)
 local Network = require(script.Parent.Parent.Parent.Network)
 
 local WeaponConfig = Config.WeaponConfig
+local MatchState = Enums.MatchState
 local WeaponUtils = Utils.WeaponUtils
 local VFXUtils = Utils.VFXUtils
 
@@ -22,6 +24,7 @@ local FIRE_WEAPON_ACTION = "FireWeapon"
 local camera = Workspace.CurrentCamera
 local player = Players.LocalPlayer
 local janitor = Janitor.new()
+local matchJanitor = Janitor.new()
 local equippedWeapon: Tool? = nil
 local lastFireTime = 0
 
@@ -43,11 +46,13 @@ function Shared.OnStart()
 	if player.Character then
 		Private.OnCharacterAdded(player.Character)
 	end
+
+	matchJanitor:Add(Charm.effect(Private.UpdateShiftLock), true)
 end
 
 function Private.OnCharacterAdded(character: Model)
 	janitor:Cleanup()
-	equippedWeapon = nil
+	Private.SetEquippedWeapon(WeaponUtils.GetWeaponFromCharacter(character))
 
 	janitor:Add(character.ChildAdded:Connect(Private.OnChildAdded), "Disconnect")
 	janitor:Add(character.ChildRemoved:Connect(Private.OnChildRemoved), "Disconnect")
@@ -63,18 +68,29 @@ function Private.OnChildAdded(child: Instance)
 		return
 	end
 
-	equippedWeapon = child
-	SmoothShiftLock:ToggleShiftLock(true)
+	Private.SetEquippedWeapon(child)
 end
 
 function Private.OnChildRemoved(child: Instance)
 	if child == equippedWeapon then
-		equippedWeapon = nil
+		Private.SetEquippedWeapon(nil)
 	end
 end
 
 function Private.OnDied()
-	SmoothShiftLock:ToggleShiftLock(false)
+	Private.SetEquippedWeapon(nil)
+end
+
+function Private.SetEquippedWeapon(weapon: Tool?)
+	equippedWeapon = weapon
+	Store.Weapon(weapon ~= nil)
+	Private.UpdateShiftLock()
+end
+
+function Private.UpdateShiftLock()
+	local match = Store.Match()
+	local shouldLock = equippedWeapon ~= nil and match.State == MatchState.RoundActive
+	SmoothShiftLock:ToggleShiftLock(shouldLock)
 end
 
 function Private.OnFireAction(_actionName: string, inputState: Enum.UserInputState)

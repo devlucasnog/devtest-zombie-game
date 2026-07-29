@@ -6,8 +6,8 @@ local Config: { [string]: Types.ZombieConfigType } = {
 	Basic = {
 		DisplayName = "Basic",
 		Health = 100,
-		WalkSpeed = 8,
-		Damage = 10,
+		WalkSpeed = 32,
+		Damage = 25,
 		AttackCooldown = 1,
 		AttackRange = 5,
 	},

@@ -2152,6 +2152,13 @@
                       "filePaths": [
                         "src/Shared\\Store\\Atoms\\ProfileAtom.luau"
                       ]
+                    },
+                    {
+                      "name": "WeaponAtom",
+                      "className": "ModuleScript",
+                      "filePaths": [
+                        "src/Shared\\Store\\Atoms\\WeaponAtom.luau"
+                      ]
                     }
                   ]
                 }
