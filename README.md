@@ -1,4 +1,4 @@
-# roblox-game-template
+# [TEST] - Zombie Game
 
 A reusable starting point for Roblox game projects: Rojo + Wally + the architecture documented in
 [CLAUDE.md](CLAUDE.md) (Loader-driven Services/Controllers, Charm/Vide state and UI, Replica/ProfileStore
