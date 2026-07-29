@@ -53,3 +53,15 @@ duplicating logic.
 - **Building UI in code.** I stuck to Studio-built UI with manual Charm bindings instead of a
   declarative UI library, to stay consistent with the project's existing convention rather than
   introducing a second UI paradigm for one feature.
+
+## Extras
+
+Beyond points, killing a zombie also grants the player Cash, persisted through the same
+ProfileStore/Replica profile used for the rest of the player's data. Cash is not required by the
+assignment, points already cover progress/ranking. I added it to show how I handle persistent,
+DataStore-backed operations end to end (validated server-side action, ProfileStore session,
+replication to the client) rather than leaving that layer untouched.
+
+It also sets up a foundation for later systems: Cash could be spent on buying new weapons or
+upgrades without changing the underlying profile or action pattern, since the mutation already goes
+through a validated Profile Action instead of being written ad hoc.
